@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  LABEL
+  SONGWRITER
+  ARTIST
+}
+
+enum PortalType {
+  GENERAL
+  PROJECT
+}
+
+enum SubmissionStatus {
+  NEW
+  REVIEWED
+  SHORTLISTED
+  PITCHED
+  ARCHIVED
+}
+
+enum TrackVerdict {
+  PENDING
+  APPROVED
+  HOLD
+  DECLINED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          Role
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  label         Label?
+  songwriter    Songwriter?
+  artistMember  ArtistMember?
+}
+
+model Label {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+
+  portals        Portal[]
+  pitchPackages  PitchPackage[]
+}
+
+model Songwriter {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  submissions  Submission[]
+  invites      PortalInvite[]
+}
+
+model Artist {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  members       ArtistMember[]
+  pitchPackages PitchPackage[]
+}
+
+model ArtistMember {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artistId  String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  role      String
+  createdAt DateTime @default(now())
+}
+
+model Portal {
+  id          String     @id @default(cuid())
+  labelId     String
+  label       Label      @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  type        PortalType
+  name        String
+  slug        String     @unique
+  brief       String?
+  deadline    DateTime?
+  isPublic    Boolean    @default(true)
+  bgImageUrl  String?
+  bgBlurPx    Int        @default(5)
+  createdAt   DateTime   @default(now())
+
+  submissions  Submission[]
+  invites      PortalInvite[]
+}
+
+model PortalInvite {
+  id           String      @id @default(cuid())
+  portalId     String
+  portal       Portal      @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  email        String
+  songwriterId String?
+  songwriter   Songwriter? @relation(fields: [songwriterId], references: [id])
+  token        String      @unique @default(cuid())
+  acceptedAt   DateTime?
+  createdAt    DateTime    @default(now())
+}
+
+model Submission {
+  id           String           @id @default(cuid())
+  portalId     String
+  portal       Portal           @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  songwriterId String?
+  songwriter   Songwriter?      @relation(fields: [songwriterId], references: [id])
+  noteToLabel  String?
+  status       SubmissionStatus @default(NEW)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  tracks  Track[]
+}
+
+model Track {
+  id            String     @id @default(cuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  title         String
+  fileUrl       String
+  fileSizeBytes Int
+  durationSecs  Int?
+  genres        String[]
+  moods         String[]
+  createdAt     DateTime   @default(now())
+
+  labelNotes  LabelNote[]
+  pitchItems  PitchItem[]
+}
+
+model LabelNote {
+  id        String   @id @default(cuid())
+  trackId   String
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  rating    Int?
+  createdAt DateTime @default(now())
+}
+
+model PitchPackage {
+  id        String   @id @default(cuid())
+  labelId   String
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  artistId  String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  name      String
+  note      String?
+  createdAt DateTime @default(now())
+
+  items  PitchItem[]
+}
+
+model PitchItem {
+  id           String       @id @default(cuid())
+  packageId    String
+  package      PitchPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  trackId      String
+  track        Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  verdict      TrackVerdict @default(PENDING)
+  artistRating Int?
+  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+
+  comments  ArtistComment[]
+}
+
+model ArtistComment {
+  id           String    @id @default(cuid())
+  pitchItemId  String
+  pitchItem    PitchItem @relation(fields: [pitchItemId], references: [id], onDelete: Cascade)
+  authorId     String
+  body         String
+  timestampSec Int?
+  createdAt    DateTime  @default(now())
+}
