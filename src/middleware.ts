@@ -1,6 +1,5 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
-import type { NextAuthRequest } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 const PUBLIC_PATHS = ["/login", "/register", "/api/auth"];
 
@@ -18,18 +17,20 @@ const ROLE_PREFIXES: Record<string, string> = {
   ARTIST: "/artist",
 };
 
-export default auth((req: NextAuthRequest) => {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isPublic(pathname)) return NextResponse.next();
 
-  if (!req.auth?.user) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  if (!token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = (req.auth.user as { role?: string }).role;
+  const role = token.role as string | undefined;
   const allowedPrefix = role ? ROLE_PREFIXES[role] : undefined;
 
   // If user is on the root or wrong role prefix, redirect to their dashboard
@@ -38,7 +39,7 @@ export default auth((req: NextAuthRequest) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
