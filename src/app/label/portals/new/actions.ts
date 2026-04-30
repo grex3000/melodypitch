@@ -1,14 +1,14 @@
 "use server";
 
-import { auth } from "@/auth";
+import { supabaseServer } from "@/lib/supabase-server";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 export async function createPortalAction(formData: FormData) {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  if (!user) redirect("/login");
 
-  const label = await db.label.findUnique({ where: { userId: session.user.id } });
+  const label = await db.label.findUnique({ where: { userId: user.id } });
   if (!label) redirect("/login");
 
   const type = formData.get("type") as "GENERAL" | "PROJECT";

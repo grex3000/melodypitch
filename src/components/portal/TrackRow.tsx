@@ -10,7 +10,8 @@ export interface TrackData {
   title: string;
   genres: string[];
   moods: string[];
-  s3Key?: string;
+  filePath?: string;
+  fileUrl?: string;
   uploadProgress?: number; // 0-100
   uploadError?: string;
 }

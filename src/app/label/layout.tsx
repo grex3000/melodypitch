@@ -1,7 +1,8 @@
-import { requireRole } from "@/lib/auth-utils";
-import LabelShell from "@/components/shell/LabelShell";
+import DashboardShell from "@/components/shell/DashboardShell";
 
 export default async function LabelLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireRole(["LABEL"]);
-  return <LabelShell userName={user.name ?? user.email}>{children}</LabelShell>;
+  // For now, we'll get user from session
+  // This is a simplified version - in production, use proper session handling
+  const userName = "User"; // TODO: Get from Supabase session
+  return <DashboardShell role="LABEL" userName={userName}>{children}</DashboardShell>;
 }

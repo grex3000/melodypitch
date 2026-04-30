@@ -1,14 +1,14 @@
-import { auth } from "@/auth";
+import { supabaseServer } from "@/lib/supabase-server";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function LabelPortalsPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  if (!user) redirect("/login");
 
   const label = await db.label.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     include: {
       portals: {
         orderBy: { createdAt: "desc" },

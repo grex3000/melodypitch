@@ -1,4 +1,5 @@
-import { signIn } from "@/auth";
+import { supabaseServer } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
 
 export default function LoginPage({
   searchParams,
@@ -8,8 +9,12 @@ export default function LoginPage({
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-[#e7e5e4]">
       <div className="w-full max-w-md bg-white rounded-[1.25rem] p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight mb-1">Sign in to MelodyPitch</h1>
-        <p className="text-sm text-[#78716c] mb-8">Enter your credentials to continue.</p>
+        <h1 className="text-2xl font-semibold tracking-tight mb-1">
+          Sign in to MelodyPitch
+        </h1>
+        <p className="text-sm text-[#78716c] mb-8">
+          Enter your credentials to continue.
+        </p>
 
         {searchParams.error && (
           <p className="text-sm text-red-600 mb-4 bg-red-50 px-3 py-2 rounded-[0.625rem]">
@@ -20,16 +25,29 @@ export default function LoginPage({
         <form
           action={async (formData) => {
             "use server";
-            await signIn("credentials", {
-              email: formData.get("email"),
-              password: formData.get("password"),
-              redirectTo: searchParams.callbackUrl ?? "/",
+            const email = formData.get("email") as string;
+            const password = formData.get("password") as string;
+            const callbackUrl = searchParams.callbackUrl ?? "/";
+
+            const { error } = await supabaseServer.auth.signInWithPassword({
+              email,
+              password,
             });
+
+            if (error) {
+              return redirect(
+                `/login?error=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
+              );
+            }
+
+            return redirect(callbackUrl);
           }}
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <label htmlFor="email" className="text-sm font-medium">
+              Email
+            </label>
             <input
               id="email"
               name="email"
@@ -41,7 +59,9 @@ export default function LoginPage({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm font-medium">Password</label>
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
             <input
               id="password"
               name="password"
@@ -62,7 +82,10 @@ export default function LoginPage({
 
         <p className="text-sm text-[#78716c] mt-6 text-center">
           No account?{" "}
-          <a href="/register" className="text-[#6366f1] hover:underline font-medium">
+          <a
+            href="/register"
+            className="text-[#6366f1] hover:underline font-medium"
+          >
             Create one free
           </a>
         </p>

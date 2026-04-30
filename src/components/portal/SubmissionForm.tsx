@@ -49,14 +49,13 @@ export default function SubmissionForm({
   const validTracks = tracks.filter((t) => !t.error);
   const canSubmit = validTracks.length > 0 && formState === "idle";
 
-  async function uploadFile(track: TrackData): Promise<string> {
-    const res = await fetch("/api/upload/presign", {
+  async function uploadFile(track: TrackData): Promise<{ path: string; url: string }> {
+    const formData = new FormData();
+    formData.append('file', track.file);
+
+    const res = await fetch("/api/upload", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contentType: track.file.type,
-        fileSize: track.file.size,
-      }),
+      body: formData,
     });
 
     if (!res.ok) {
@@ -64,17 +63,7 @@ export default function SubmissionForm({
       throw new Error(error ?? "Upload failed");
     }
 
-    const { uploadUrl, key } = await res.json();
-
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: track.file,
-      headers: { "Content-Type": track.file.type },
-    });
-
-    if (!uploadRes.ok) throw new Error("S3 upload failed");
-
-    return key;
+    return await res.json();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -84,15 +73,15 @@ export default function SubmissionForm({
     setFormState("uploading");
     setGlobalError(null);
 
-    const uploadedKeys: Array<{ trackId: string; key: string }> = [];
+    const uploadedTracks: Array<{ trackId: string; path: string; url: string }> = [];
 
     for (const track of validTracks) {
       handleTrackChange(track.id, { uploadProgress: 0 });
       try {
         handleTrackChange(track.id, { uploadProgress: 10 });
-        const key = await uploadFile(track);
-        handleTrackChange(track.id, { uploadProgress: 100, s3Key: key });
-        uploadedKeys.push({ trackId: track.id, key });
+        const result = await uploadFile(track);
+        handleTrackChange(track.id, { uploadProgress: 100, filePath: result.path, fileUrl: result.url });
+        uploadedTracks.push({ trackId: track.id, path: result.path, url: result.url });
       } catch (err) {
         handleTrackChange(track.id, {
           uploadProgress: undefined,
@@ -101,7 +90,7 @@ export default function SubmissionForm({
       }
     }
 
-    const failedCount = validTracks.length - uploadedKeys.length;
+    const failedCount = validTracks.length - uploadedTracks.length;
     if (failedCount > 0) {
       setGlobalError(`${failedCount} file(s) failed to upload. Fix errors and try again.`);
       setFormState("idle");
@@ -110,11 +99,11 @@ export default function SubmissionForm({
 
     setFormState("submitting");
 
-    const trackPayload = uploadedKeys.map(({ trackId, key }) => {
+    const trackPayload = uploadedTracks.map(({ trackId, path }) => {
       const track = tracks.find((t) => t.id === trackId)!;
       return {
         title: track.title || track.file.name,
-        fileUrl: key,
+        fileUrl: path,
         fileSizeBytes: track.file.size,
         genres: track.genres,
         moods: track.moods,
