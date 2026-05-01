@@ -34,9 +34,10 @@ enum TrackVerdict {
 
 model User {
   id            String   @id @default(cuid())
+  supabaseUserId String   @unique
   email         String   @unique
   name          String
-  passwordHash  String
+  passwordHash  String?
   role          Role
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
