@@ -1,11 +1,8 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs/nextjs'
-import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
 
 const STATUS_STEPS = ['NEW', 'REVIEWED', 'SHORTLISTED', 'PITCHED'] as const
 
 export default async function SongwriterDashboard() {
-  const supabase = createServerComponentClient({ cookies })
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session?.user?.email) return <div>Loading...</div>

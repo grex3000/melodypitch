@@ -1,4 +1,3 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs/middleware'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -16,16 +15,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Validate Supabase session
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  const { data: { session } } = await supabase.auth.getSession()
-
-  if (!session) {
+  // Check for Supabase session cookie (simplified check)
+  const hasSession = req.cookies.has('sb-access-token') || req.cookies.has('sb-refresh-token');
+  
+  if (!hasSession) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {

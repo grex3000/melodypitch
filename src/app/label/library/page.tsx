@@ -1,10 +1,6 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs/nextjs'
-import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
-import TrackRow from '@/components/portal/TrackRow'
 
 export default async function LabelLibrary() {
-  const supabase = createServerComponentClient({ cookies })
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session?.user?.email) return <div>Loading...</div>

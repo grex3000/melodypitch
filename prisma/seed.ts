@@ -68,21 +68,6 @@ async function main() {
 
     if (error) {
       console.log(`User ${u.email} may already exist:`, error.message);
-      // Try to fetch existing user
-      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(u.email);
-      if (existingUser?.user) {
-        // Create Prisma user
-        const dbUser = await db.user.create({
-          data: {
-            supabaseUserId: existingUser.user.id,
-            email: u.email,
-            name: u.name,
-            passwordHash: null,
-            role: u.role,
-          },
-        });
-        createdUsers[u.email] = { id: dbUser.id, supabaseId: existingUser.user.id };
-      }
       continue;
     }
 

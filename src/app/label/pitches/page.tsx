@@ -1,9 +1,6 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs/nextjs'
-import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
 
 export default async function LabelPitches() {
-  const supabase = createServerComponentClient({ cookies })
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session?.user?.email) return <div>Loading...</div>
