@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 
@@ -38,9 +39,46 @@ export default function RegisterPage() {
               return;
             }
 
-            // Create profile based on role
-            // Note: In production, this should be done via database trigger or webhook
-            // For now, we'll skip this step as it requires additional setup
+            // Create Prisma User record linked to Supabase
+            const user = await db.user.create({
+              data: {
+                supabaseUserId: data.user.id,
+                email,
+                name,
+                passwordHash: null,
+                role,
+              },
+            });
+
+            // Create role-specific profile
+            if (role === "LABEL") {
+              await db.label.create({
+                data: {
+                  userId: user.id,
+                  name: name,
+                },
+              });
+            } else if (role === "SONGWRITER") {
+              await db.songwriter.create({
+                data: {
+                  userId: user.id,
+                },
+              });
+            } else if (role === "ARTIST") {
+              // For artist, create Artist record first, then ArtistMember
+              const artist = await db.artist.create({
+                data: {
+                  name: name,
+                },
+              });
+              await db.artistMember.create({
+                data: {
+                  userId: user.id,
+                  artistId: artist.id,
+                  role: "Primary",
+                },
+              });
+            }
 
             redirect("/login?registered=1");
           }}
