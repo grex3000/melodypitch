@@ -2,13 +2,11 @@ import { db } from '@/lib/db'
 
 const STATUS_STEPS = ['NEW', 'REVIEWED', 'SHORTLISTED', 'PITCHED'] as const
 
-export default async function SongwriterDashboard() {
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session?.user?.email) return <div>Loading...</div>
+export const dynamic = 'force-dynamic'
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
+export default async function SongwriterDashboard() {
+  const user = await db.user.findFirst({
+    where: { role: 'SONGWRITER' },
     include: { songwriter: true }
   })
 
@@ -45,32 +43,38 @@ export default async function SongwriterDashboard() {
                 </div>
               </div>
 
-              {/* Status Progress Bar */}
-              <div className="flex items-center gap-1 mt-4">
-                {STATUS_STEPS.map((step, idx) => {
-                  const currentIdx = STATUS_STEPS.indexOf(sub.status)
-                  const isActive = idx <= currentIdx
-                  return (
-                    <div key={step} className="flex items-center">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                        isActive ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-gray-500'
-                      }`}>
-                        {idx + 1}
-                      </div>
-                      {idx < STATUS_STEPS.length - 1 && (
-                        <div className={`h-1 w-8 ${
-                          idx < currentIdx ? 'bg-[#6366f1]' : 'bg-gray-200'
-                        }`} />
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="flex justify-between mt-1">
-                {STATUS_STEPS.map((step) => (
-                  <span key={step} className="text-xs text-[#78716c]">{step}</span>
-                ))}
-              </div>
+              {/* Status Progress Bar - only show for active submissions */}
+              {sub.status !== 'ARCHIVED' ? (
+                <>
+                  <div className="flex items-center gap-1 mt-4">
+                    {STATUS_STEPS.map((step, idx) => {
+                      const currentIdx = STATUS_STEPS.indexOf(sub.status as typeof STATUS_STEPS[number])
+                      const isActive = idx <= currentIdx
+                      return (
+                        <div key={step} className="flex items-center">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                            isActive ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-gray-500'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          {idx < STATUS_STEPS.length - 1 && (
+                            <div className={`h-1 w-8 ${
+                              idx < currentIdx ? 'bg-[#6366f1]' : 'bg-gray-200'
+                            }`} />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    {STATUS_STEPS.map((step) => (
+                      <span key={step} className="text-xs text-[#78716c]">{step}</span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="mt-4 text-xs text-[#78716c]">Archived</div>
+              )}
             </div>
           ))}
         </div>

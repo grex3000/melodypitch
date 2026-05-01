@@ -1,12 +1,10 @@
 import { db } from '@/lib/db'
 
-export default async function LabelDashboard() {
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session?.user?.email) return <div>Loading...</div>
+export const dynamic = 'force-dynamic'
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
+export default async function LabelDashboard() {
+  const user = await db.user.findFirst({
+    where: { role: 'LABEL' },
     include: { label: { include: { portals: true, pitchPackages: true } } }
   })
 

@@ -8,7 +8,14 @@ export async function createPortalAction(formData: FormData) {
   const { data: { user } } = await supabaseServer.auth.getUser();
   if (!user) redirect("/login");
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  let label;
+  try {
+    label = await db.label.findUnique({ where: { userId: user.id } });
+  } catch (e) {
+    // Database not set up yet
+    redirect("/label/portals");
+  }
+  
   if (!label) redirect("/login");
 
   const type = formData.get("type") as "GENERAL" | "PROJECT";

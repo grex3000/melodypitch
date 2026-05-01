@@ -1,5 +1,7 @@
 import { db } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ArtistDashboard() {
   // Simplified: assume middleware protects route, use test user for now
   const user = await db.user.findFirst({

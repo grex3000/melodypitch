@@ -1,25 +1,28 @@
-import { supabaseServer } from "@/lib/supabase-server";
 import { db } from "@/lib/db";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default async function LabelPortalsPage() {
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  if (!user) redirect("/login");
+export const dynamic = 'force-dynamic';
 
-  const label = await db.label.findUnique({
-    where: { userId: user.id },
+export default async function LabelPortalsPage() {
+  const user = await db.user.findFirst({
+    where: { role: 'LABEL' },
     include: {
-      portals: {
-        orderBy: { createdAt: "desc" },
+      label: {
         include: {
-          _count: { select: { submissions: true } },
+          portals: {
+            orderBy: { createdAt: "desc" },
+            include: {
+              _count: { select: { submissions: true } },
+            },
+          },
         },
       },
     },
   });
 
-  if (!label) redirect("/login");
+  if (!user?.label) return <div>Label profile not found</div>;
+
+  const label = user.label;
 
   return (
     <div className="p-8 max-w-4xl">
