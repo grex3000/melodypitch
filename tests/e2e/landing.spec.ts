@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Landing Page', () => {
+  test('should display hero section', async ({ page }) => {
+    await page.goto('http://localhost:3000/');
+    
+    // Check hero section is visible
+    await expect(page.locator('h1')).toContainText('Connect Songwriters with Labels & Artists');
+    await expect(page.getByRole('link', { name: 'Start Free Beta' })).toBeVisible();
+  });
+
+  test('should navigate to register page', async ({ page }) => {
+    await page.goto('http://localhost:3000/');
+    
+    await page.getByRole('link', { name: 'Start Free Beta' }).click();
+    await expect(page).toHaveURL('http://localhost:3000/register');
+  });
+
+  test('should display features section', async ({ page }) => {
+    await page.goto('http://localhost:3000/');
+    
+    await expect(page.getByText('Portal Submission')).toBeVisible();
+    await expect(page.getByText('Pitch Management')).toBeVisible();
+    await expect(page.getByText('Analytics Dashboard')).toBeVisible();
+  });
+
+  test('should be mobile responsive', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('http://localhost:3000/');
+    
+    // Check that content is visible on mobile
+    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Start Free Beta' })).toBeVisible();
+  });
+});
