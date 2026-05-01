@@ -1,8 +1,10 @@
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs/nextjs'
+import { cookies } from 'next/headers'
 import DashboardShell from "@/components/shell/DashboardShell";
 
 export default async function LabelLayout({ children }: { children: React.ReactNode }) {
-  // For now, we'll get user from session
-  // This is a simplified version - in production, use proper session handling
-  const userName = "User"; // TODO: Get from Supabase session
+  const supabase = createServerComponentClient({ cookies })
+  const { data: { session } } = await supabase.auth.getSession()
+  const userName = session?.user?.email || "User"
   return <DashboardShell role="LABEL" userName={userName}>{children}</DashboardShell>;
 }
