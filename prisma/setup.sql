@@ -3,7 +3,7 @@
 
 -- Create User table
 CREATE TABLE IF NOT EXISTS "User" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "supabaseUserId" VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 
 -- Create Label table
 CREATE TABLE IF NOT EXISTS "Label" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "userId" VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     "logoUrl" VARCHAR(255),
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "Label" (
 
 -- Create Songwriter table
 CREATE TABLE IF NOT EXISTS "Songwriter" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "userId" VARCHAR(255) UNIQUE NOT NULL,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
@@ -33,14 +33,14 @@ CREATE TABLE IF NOT EXISTS "Songwriter" (
 
 -- Create Artist table
 CREATE TABLE IF NOT EXISTS "Artist" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Create ArtistMember table
 CREATE TABLE IF NOT EXISTS "ArtistMember" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "userId" VARCHAR(255) UNIQUE NOT NULL,
     "artistId" VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS "ArtistMember" (
 
 -- Create Portal table
 CREATE TABLE IF NOT EXISTS "Portal" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "labelId" VARCHAR(255) NOT NULL,
     type VARCHAR(50) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -67,11 +67,11 @@ CREATE TABLE IF NOT EXISTS "Portal" (
 
 -- Create PortalInvite table
 CREATE TABLE IF NOT EXISTS "PortalInvite" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "portalId" VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     "songwriterId" VARCHAR(255),
-    "token" VARCHAR(255) UNIQUE NOT NULL DEFAULT gen_random_uid(),
+    "token" VARCHAR(255) UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     "acceptedAt" TIMESTAMP,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY ("portalId") REFERENCES "Portal"(id) ON DELETE CASCADE,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS "PortalInvite" (
 
 -- Create Submission table
 CREATE TABLE IF NOT EXISTS "Submission" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "portalId" VARCHAR(255) NOT NULL,
     "songwriterId" VARCHAR(255),
     "noteToLabel" TEXT,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS "Submission" (
 
 -- Create Track table
 CREATE TABLE IF NOT EXISTS "Track" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "submissionId" VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     "fileUrl" VARCHAR(255) NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS "Track" (
 
 -- Create LabelNote table
 CREATE TABLE IF NOT EXISTS "LabelNote" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "trackId" VARCHAR(255) NOT NULL,
     "authorId" VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS "LabelNote" (
 
 -- Create PitchPackage table
 CREATE TABLE IF NOT EXISTS "PitchPackage" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "labelId" VARCHAR(255) NOT NULL,
     "artistId" VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS "PitchPackage" (
 
 -- Create PitchItem table
 CREATE TABLE IF NOT EXISTS "PitchItem" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "packageId" VARCHAR(255) NOT NULL,
     "trackId" VARCHAR(255) NOT NULL,
     verdict VARCHAR(50) NOT NULL DEFAULT 'PENDING',
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS "PitchItem" (
 
 -- Create ArtistComment table
 CREATE TABLE IF NOT EXISTS "ArtistComment" (
-    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
     "pitchItemId" VARCHAR(255) NOT NULL,
     "authorId" VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
