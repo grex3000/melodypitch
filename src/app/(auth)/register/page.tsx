@@ -22,7 +22,7 @@ export default function RegisterPage() {
             const password = formData.get("password") as string;
             const role = formData.get("role") as Role;
 
-            // Create user with Supabase Auth
+            // Create user with Supabase Auth (skip Prisma for now)
             const { data, error } = await supabaseServer.auth.signUp({
               email,
               password,
@@ -34,52 +34,12 @@ export default function RegisterPage() {
               },
             });
 
-            if (error || !data.user) {
-              // Handle error - in production, show error message
-              return;
+            if (error || !data?.user) {
+              return redirect("/register?error=1");
             }
 
-            // Create Prisma User record linked to Supabase
-            const user = await db.user.create({
-              data: {
-                supabaseUserId: data.user.id,
-                email,
-                name,
-                passwordHash: null,
-                role,
-              },
-            });
-
-            // Create role-specific profile
-            if (role === "LABEL") {
-              await db.label.create({
-                data: {
-                  userId: user.id,
-                  name: name,
-                },
-              });
-            } else if (role === "SONGWRITER") {
-              await db.songwriter.create({
-                data: {
-                  userId: user.id,
-                },
-              });
-            } else if (role === "ARTIST") {
-              // For artist, create Artist record first, then ArtistMember
-              const artist = await db.artist.create({
-                data: {
-                  name: name,
-                },
-              });
-              await db.artistMember.create({
-                data: {
-                  userId: user.id,
-                  artistId: artist.id,
-                  role: "Primary",
-                },
-              });
-            }
-
+            // TODO: Create Prisma records later when DB is set up
+            // For now, just redirect to login
             redirect("/login?registered=1");
           }}
           className="flex flex-col gap-4"
