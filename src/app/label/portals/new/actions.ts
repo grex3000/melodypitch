@@ -11,7 +11,7 @@ export async function createPortalAction(formData: FormData) {
   let label;
   try {
     label = await db.label.findUnique({ where: { userId: user.id } });
-  } catch (e) {
+  } catch (_e) {
     // Database not set up yet
     redirect("/label/portals");
   }
