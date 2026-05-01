@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/auth']
+const PUBLIC_PATHS = ['/', '/login', '/register', '/api/auth']
 const PORTAL_PATH_PATTERN = /^\/p\//;
 
 export async function middleware(req: NextRequest) {

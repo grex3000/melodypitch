@@ -19,9 +19,11 @@ test.describe('Landing Page', () => {
   test('should display features section', async ({ page }) => {
     await page.goto('http://localhost:3000/');
     
-    await expect(page.getByText('Portal Submission')).toBeVisible();
-    await expect(page.getByText('Pitch Management')).toBeVisible();
-    await expect(page.getByText('Analytics Dashboard')).toBeVisible();
+    // Check features section specifically
+    const featuresSection = page.locator('section').nth(1); // Second section is features
+    await expect(featuresSection.getByText('Portal Submission')).toBeVisible();
+    await expect(featuresSection.getByText('Pitch Management')).toBeVisible();
+    await expect(featuresSection.getByText('Analytics Dashboard')).toBeVisible();
   });
 
   test('should be mobile responsive', async ({ page }) => {
