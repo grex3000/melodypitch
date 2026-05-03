@@ -73,6 +73,9 @@ export default function RegisterPage({
 
               if (error || !data.user) {
                 console.error('Registration error:', error);
+                console.error('Error message:', error?.message);
+                console.error('Error code:', error?.code);
+                console.error('Full error:', JSON.stringify(error, null, 2));
                 return redirect("/register?error=1");
               }
 
