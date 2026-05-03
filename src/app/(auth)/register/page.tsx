@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
+import { db } from '@/lib/db';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -73,6 +74,22 @@ export default function RegisterPage({
               if (error || !data.user) {
                 console.error('Registration error:', error);
                 return redirect("/register?error=1");
+              }
+
+              // Create Prisma User record
+              try {
+                await db.user.create({
+                  data: {
+                    supabaseUserId: data.user.id,
+                    email,
+                    name,
+                    role,
+                  },
+                });
+              } catch (dbErr) {
+                console.error('Database creation error:', dbErr);
+                // User was created in Supabase but not in Prisma - still redirect to login
+                // The user can login but may have issues with app functionality
               }
 
               redirect("/login?registered=1");
