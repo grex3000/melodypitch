@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { cookies } from 'next/headers';
+import { getCurrentUser } from '@/lib/auth-context';
 
 export async function GET(
   request: NextRequest,
@@ -8,6 +8,15 @@ export async function GET(
 ) {
   try {
     const { submissionId } = params;
+
+    // Verify submission exists
+    const submission = await db.submission.findUnique({
+      where: { id: submissionId },
+    });
+
+    if (!submission) {
+      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+    }
 
     const comments = await db.comment.findMany({
       where: {
@@ -47,6 +56,13 @@ export async function POST(
 ) {
   try {
     const { submissionId } = params;
+    
+    // Get current user
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { body: commentBody } = body;
 
@@ -54,27 +70,43 @@ export async function POST(
       return NextResponse.json({ error: 'Comment body is required' }, { status: 400 });
     }
 
-    // In a real app, we'd get the current user from the session
-    // For now, we'll need to pass it or get it from auth
-    // This is a simplified implementation
-    
-    // Get current user from cookies (would need to decrypt/validate in production)
-    const cookieStore = await cookies();
-    const hasSession = cookieStore.has('sb-access-token');
+    // Verify submission exists
+    const submission = await db.submission.findUnique({
+      where: { id: submissionId },
+    });
 
-    if (!hasSession) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!submission) {
+      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    // In a real implementation, we'd:
-    // 1. Extract user ID from JWT token
-    // 2. Verify submission belongs to portal user can comment on
-    // 3. Create comment
+    // Create comment
+    const comment = await db.comment.create({
+      data: {
+        submissionId,
+        authorId: currentUser.id,
+        body: commentBody.trim(),
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
 
-    // For now, return a placeholder
     return NextResponse.json(
-      { error: 'Comment feature requires authenticated user context' },
-      { status: 501 }
+      {
+        comment: {
+          id: comment.id,
+          body: comment.body,
+          author: comment.author,
+          createdAt: comment.createdAt.toISOString(),
+        },
+      },
+      { status: 201 }
     );
   } catch (error) {
     console.error('Error creating comment:', error);
