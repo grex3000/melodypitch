@@ -1,23 +1,55 @@
-import { createClient } from '@supabase/supabase-js';
-import { redirect } from "next/navigation";
-import type { Role } from "@prisma/client";
-import { db } from '@/lib/db';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { Role } from '@prisma/client';
 
 export default function RegisterPage({
   searchParams,
 }: {
   searchParams: { error?: string; registered?: string };
 }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(searchParams.error ? 'Unable to create account. Please try again.' : '');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const name = formData.get('name') as string;
+      const role = formData.get('role') as Role;
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, role }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to create account');
+        setLoading(false);
+        return;
+      }
+
+      // Success - redirect to login
+      router.push('/login?registered=1');
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('An error occurred. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-bg-base">
       <div className="w-full max-w-md bg-bg-surface-1 rounded-lg p-8 border border-border-default">
@@ -28,15 +60,9 @@ export default function RegisterPage({
           Free for songwriters and artists.
         </p>
 
-        {searchParams.registered && (
-          <p className="type-body-sm text-success bg-success-muted px-3 py-2 rounded-md mb-4">
-            Account created! Please sign in.
-          </p>
-        )}
-
-        {searchParams.error && (
+        {error && (
           <p className="type-body-sm text-error bg-error-muted px-3 py-2 rounded-md mb-4">
-            Unable to create account. Please try again.
+            {error}
           </p>
         )}
 
@@ -52,57 +78,7 @@ export default function RegisterPage({
           <div className="flex-1 h-px bg-border-default" />
         </div>
 
-        <form
-          action={async (formData) => {
-            "use server";
-            const name = formData.get("name") as string;
-            const email = formData.get("email") as string;
-            const password = formData.get("password") as string;
-            const role = formData.get("role") as Role;
-
-            try {
-              const { data, error } = await supabaseAdmin.auth.admin.createUser({
-                email,
-                password,
-                email_confirm: true,
-                user_metadata: {
-                  name,
-                  role,
-                },
-              });
-
-              if (error || !data.user) {
-                console.error('Registration error:', error);
-                console.error('Error message:', error?.message);
-                console.error('Error code:', error?.code);
-                console.error('Full error:', JSON.stringify(error, null, 2));
-                return redirect("/register?error=1");
-              }
-
-              // Create Prisma User record
-              try {
-                await db.user.create({
-                  data: {
-                    supabaseUserId: data.user.id,
-                    email,
-                    name,
-                    role,
-                  },
-                });
-              } catch (dbErr) {
-                console.error('Database creation error:', dbErr);
-                // User was created in Supabase but not in Prisma - still redirect to login
-                // The user can login but may have issues with app functionality
-              }
-
-              redirect("/login?registered=1");
-            } catch (err) {
-              console.error('Registration exception:', err);
-              return redirect("/register?error=1");
-            }
-          }}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="type-label text-fg-1">
               Full name
@@ -162,9 +138,10 @@ export default function RegisterPage({
 
           <button
             type="submit"
-            className="btn btn-primary btn-lg mt-2"
+            disabled={loading}
+            className="btn btn-primary btn-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create account
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
