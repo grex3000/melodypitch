@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded container -->
+  <rect x="15" y="15" width="170" height="170" rx="40" fill="url(#gradPurple)"/>
+  
+  <!-- Abstract waveform forming M shape -->
+  <path d="M40 130 
+           Q40 80, 70 100 
+           Q90 120, 100 80 
+           Q110 50, 130 90
+           Q140 110, 160 70" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="10" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+        
+  <!-- Circle highlight -->
+  <circle cx="160" cy="60" r="8" fill="white" opacity="0.85"/>
+  <circle cx="165" cy="55" r="4" fill="white"/>
+</svg>

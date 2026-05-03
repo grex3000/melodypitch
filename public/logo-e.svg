@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Clean minimal: White on emerald -->
+  <rect width="512" height="512" rx="80" fill="#10b981"/>
+  
+  <!-- Minimal M with rounded terminals -->
+  <path d="M100 400 L100 180 Q100 140, 150 180 L200 250 L250 160 Q300 120, 340 180 L340 400" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="28" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+        
+  <!-- Small dot for pitch/attention -->
+  <circle cx="400" cy="140" r="20" fill="white" opacity="0.9"/>
+</svg>

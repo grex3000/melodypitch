@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ecfdf5"/>
+      <stop offset="100%" stop-color="#d1fae5"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background: Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#g2)"/>
+  
+  <!-- Abstract "M" - four bars like equalizer -->
+  <rect x="100" y="320" width="48" height="120" rx="12" fill="#065f46"/>
+  <rect x="172" y="240" width="48" height="200" rx="12" fill="#059669"/>
+  <rect x="244" y="160" width="48" height="280" rx="12" fill="#10b981"/>
+  <rect x="316" y="200" width="48" height="240" rx="12" fill="#34d399"/>
+  
+  <!-- Musical note on top -->
+  <path d="M350 100 L350 170 A20 20 0 1 1 350 170 L350 120 L380 110 L380 100 L350 100" 
+        fill="#065f46"/>
+        
+  <!-- Small accent dots -->
+  <circle cx="400" cy="140" r="12" fill="#065f46"/>
+  <circle cx="100" cy="160" r="8" fill="#059669" opacity="0.5"/>
+</svg>

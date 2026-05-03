@@ -1,18 +1,55 @@
-import { supabaseServer } from "@/lib/supabase-server";
-import { db } from "@/lib/db";
+import { createClient } from '@supabase/supabase-js';
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
-export default function RegisterPage() {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams: { error?: string; registered?: string };
+}) {
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-[#e7e5e4]">
-      <div className="w-full max-w-md bg-white rounded-[1.25rem] p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight mb-1">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-bg-base">
+      <div className="w-full max-w-md bg-bg-surface-1 rounded-lg p-8 border border-border-default">
+        <h1 className="type-h4 text-fg-1 mb-2">
           Create your account
         </h1>
-        <p className="text-sm text-[#78716c] mb-8">
+        <p className="type-body-sm text-fg-2 mb-8">
           Free for songwriters and artists.
         </p>
+
+        {searchParams.registered && (
+          <p className="type-body-sm text-success bg-success-muted px-3 py-2 rounded-md mb-4">
+            Account created! Please sign in.
+          </p>
+        )}
+
+        {searchParams.error && (
+          <p className="type-body-sm text-error bg-error-muted px-3 py-2 rounded-md mb-4">
+            Unable to create account. Please try again.
+          </p>
+        )}
+
+        {/* Google Sign-Up Button */}
+        <div className="mb-6">
+          <GoogleSignInButton />
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-border-default" />
+          <span className="text-xs text-fg-3 font-medium">Or sign up with email</span>
+          <div className="flex-1 h-px bg-border-default" />
+        </div>
 
         <form
           action={async (formData) => {
@@ -22,30 +59,32 @@ export default function RegisterPage() {
             const password = formData.get("password") as string;
             const role = formData.get("role") as Role;
 
-            // Create user with Supabase Auth (skip Prisma for now)
-            const { data, error } = await supabaseServer.auth.signUp({
-              email,
-              password,
-              options: {
-                data: {
+            try {
+              const { data, error } = await supabaseAdmin.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: true,
+                user_metadata: {
                   name,
                   role,
                 },
-              },
-            });
+              });
 
-            if (error || !data?.user) {
+              if (error || !data.user) {
+                console.error('Registration error:', error);
+                return redirect("/register?error=1");
+              }
+
+              redirect("/login?registered=1");
+            } catch (err) {
+              console.error('Registration exception:', err);
               return redirect("/register?error=1");
             }
-
-            // TODO: Create Prisma records later when DB is set up
-            // For now, just redirect to login
-            redirect("/login?registered=1");
           }}
           className="flex flex-col gap-4"
         >
-          <div className="flex flex-col gap-1">
-            <label htmlFor="name" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="name" className="type-label text-fg-1">
               Full name
             </label>
             <input
@@ -53,12 +92,12 @@ export default function RegisterPage() {
               name="name"
               type="text"
               required
-              className="border rounded-[0.625rem] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="type-label text-fg-1">
               Email
             </label>
             <input
@@ -66,12 +105,12 @@ export default function RegisterPage() {
               name="email"
               type="email"
               required
-              className="border rounded-[0.625rem] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="type-label text-fg-1">
               Password
             </label>
             <input
@@ -80,19 +119,19 @@ export default function RegisterPage() {
               type="password"
               required
               minLength={8}
-              className="border rounded-[0.625rem] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="role" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="role" className="type-label text-fg-1">
               I am a...
             </label>
             <select
               id="role"
               name="role"
               required
-              className="border rounded-[0.625rem] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1] bg-white"
+              className="input bg-bg-surface-1"
             >
               <option value="">Select role</option>
               <option value="LABEL">Label / A&R</option>
@@ -103,11 +142,21 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="mt-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-medium rounded-[0.625rem] py-2.5 text-sm transition-colors"
+            className="btn btn-primary btn-lg mt-2"
           >
             Create account
           </button>
         </form>
+
+        <p className="type-body-sm text-fg-2 mt-6 text-center">
+          Already have an account?{" "}
+          <a
+            href="/login"
+            className="text-accent-gold hover:text-accent-gold-hover font-medium transition-colors"
+          >
+            Sign in
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background: Pill shape -->
+  <rect x="32" y="32" width="448" height="448" rx="224" fill="url(#g3)"/>
+  
+  <!-- M letterform - clean and bold -->
+  <path d="M120 380 L120 180 Q120 140, 170 180 L220 240 L270 180 Q320 140, 320 180 L320 380" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="36" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+        
+  <!-- Pitch indicator - rising line -->
+  <path d="M340 320 Q380 280, 420 220 L420 220" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="20" 
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-dasharray="0 20 60 999"
+        stroke-dashoffset="0"/>
+        
+  <!-- Arrow tip -->
+  <path d="M400 200 L440 160 L440 240 Z" fill="white"/>
+</svg>

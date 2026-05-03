@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gradEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34d399;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradZinc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fafafa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4d4d8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Circle background -->
+  <circle cx="100" cy="100" r="95" fill="url(#gradEmerald)"/>
+  
+  <!-- Sound wave bars -->
+  <rect x="45" y="75" width="8" height="50" rx="4" fill="url(#gradZinc)" opacity="0.6"/>
+  <rect x="60" y="60" width="8" height="80" rx="4" fill="url(#gradZinc)" opacity="0.8"/>
+  <rect x="75" y="70" width="8" height="60" rx="4" fill="url(#gradZinc)"/>
+  <rect x="90" y="55" width="8" height="90" rx="4" fill="url(#gradZinc)" opacity="0.9"/>
+  <rect x="105" y="65" width="8" height="70" rx="4" fill="url(#gradZinc)"/>
+  
+  <!-- Arrow / pitch upward -->
+  <path d="M125 95 L145 75 L145 95" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="6" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+        
+  <!-- Top accent -->
+  <circle cx="145" cy="60" r="6" fill="white" opacity="0.9"/>
+</svg>

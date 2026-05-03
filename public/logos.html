@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MelodyPitch Logo Variations</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #18181b;
+      font-size: 2rem;
+      margin-bottom: 40px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      border: 1px solid #e4e4e7;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      border-color: #10b981;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      color: #3f3f46;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .card p {
+      font-size: 0.85rem;
+      color: #71717a;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+    .logo {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto;
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .colored-bg {
+      background: linear-gradient(135deg, #f4f4f5 0%, #e4e4e7 100%);
+    }
+    .note {
+      text-align: center;
+      color: #71717a;
+      margin-top: 40px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>MelodyPitch Logo Variations</h1>
+  
+  <div class="grid">
+    <div class="card">
+      <div class="logo colored-bg">
+        <img src="/logo-a.svg" alt="Logo A - Wave M">
+      </div>
+      <h2>Wave M</h2>
+      <p>Sound wave bars forming an M shape. Dark background with emerald accent. Professional and tech-forward.</p>
+    </div>
+
+    <div class="card">
+      <div class="logo colored-bg">
+        <img src="/logo-b.svg" alt="Logo B - Equalizer">
+      </div>
+      <h2>Equalizer</h2>
+      <p>Four-bar equalizer visualization in varying heights. Light green background. Music and energy.</p>
+    </div>
+
+    <div class="card">
+      <div class="logo colored-bg">
+        <img src="/logo-c.svg" alt="Logo C - Clean M">
+      </div>
+      <h2>Clean M</h2>
+      <p>Bold, minimal M with rounded terminals. Emerald gradient. Simple and memorable.</p>
+    </div>
+
+    <div class="card">
+      <div class="logo colored-bg">
+        <img src="/logo-d.svg" alt="Logo D - Sound Burst">
+      </div>
+      <h2>Sound Burst</h2>
+      <p>Sound waves emanating from center with musical note. Dark theme with green glow. Dynamic and modern.</p>
+    </div>
+
+    <div class="card">
+      <div class="logo colored-bg">
+        <img src="/logo-e.svg" alt="Logo E - Minimal">
+      </div>
+      <h2>Minimal M</h2>
+      <p>Ultra-clean M with rounded terminals on solid emerald. Simple and bold.</p>
+    </div>
+  </div>
+  
+  <p class="note">Open the SVG file directly to view full 512x512 version</p>
+</body>
+</html>

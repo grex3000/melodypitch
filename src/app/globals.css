@@ -4,24 +4,311 @@
 
 @layer base {
   :root {
-    --background: #e7e5e4;
-    --surface: #f5f5f4;
-    --surface-elevated: #ffffff;
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --text-base: #1c1917;
-    --text-muted: #78716c;
-    --border: #d6d3d1;
-    --radius: 1.25rem;
-    --radius-sm: 0.625rem;
+    /* ── LIGHT MODE (Default) ── */
+    --bg-base: #faf9f7;
+    --bg-surface-1: #ffffff;
+    --bg-surface-2: #f4f2ee;
+    --bg-surface-3: #ede9e3;
+    --bg-overlay: rgba(250, 249, 247, 0.92);
+
+    --border-subtle: #ede9e3;
+    --border-default: #e0dbd3;
+    --border-strong: #c8c2b8;
+    --border-focus: oklch(62% 0.14 65 / 0.5);
+
+    --fg-1: #1a1814;
+    --fg-2: #6b6660;
+    --fg-3: #9e9a92;
+    --fg-4: #c4bfb8;
+    --fg-inverse: #faf9f7;
+
+    --accent-gold: oklch(58% 0.14 65);
+    --accent-gold-muted: oklch(58% 0.14 65 / 0.1);
+    --accent-gold-hover: oklch(52% 0.14 65);
+    --accent-gold-dim: oklch(68% 0.1 65);
+
+    --accent-teal: oklch(52% 0.14 185);
+    --accent-teal-muted: oklch(52% 0.14 185 / 0.1);
+    --accent-teal-hover: oklch(46% 0.14 185);
+    --accent-teal-dim: oklch(62% 0.1 185);
+
+    --color-success: oklch(48% 0.16 145);
+    --color-success-muted: oklch(48% 0.16 145 / 0.1);
+    --color-warning: oklch(54% 0.16 75);
+    --color-warning-muted: oklch(54% 0.16 75 / 0.1);
+    --color-error: oklch(50% 0.2 25);
+    --color-error-muted: oklch(50% 0.2 25 / 0.1);
+    --color-info: oklch(50% 0.14 245);
+    --color-info-muted: oklch(50% 0.14 245 / 0.1);
+
+    --status-pending: oklch(54% 0.16 75);
+    --status-reviewing: oklch(50% 0.14 245);
+    --status-interested: oklch(48% 0.16 145);
+    --status-passed: oklch(50% 0.2 25);
+    --status-archived: #9e9a92;
+
+    /* ── SPACING ── */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-24: 96px;
+    --space-32: 128px;
+
+    /* ── BORDER RADIUS ── */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-pill: 9999px;
+
+    /* ── TYPOGRAPHY ── */
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-base: 15px;
+    --text-md: 17px;
+    --text-lg: 20px;
+    --text-xl: 24px;
+    --text-2xl: 32px;
+    --text-3xl: 44px;
+    --text-4xl: 56px;
+    --text-5xl: 72px;
+
+    --leading-tight: 1.1;
+    --leading-snug: 1.3;
+    --leading-normal: 1.5;
+    --leading-loose: 1.7;
+
+    --tracking-tight: -0.03em;
+    --tracking-normal: -0.01em;
+    --tracking-wide: 0.04em;
+    --tracking-wider: 0.08em;
+    --tracking-label: 0.12em;
+
+    --weight-light: 300;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --weight-extrabold: 800;
+
+    /* ── SHADOWS ── */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.65);
+    --shadow-modal: 0 0 0 1px var(--border-default), 0 24px 64px rgba(0, 0, 0, 0.65);
+    --shadow-focus: 0 0 0 2px var(--border-focus);
+    --shadow-glow-gold: 0 0 20px oklch(72% 0.12 65 / 0.25);
+    --shadow-glow-teal: 0 0 20px oklch(72% 0.12 185 / 0.25);
+
+    /* ── TRANSITIONS ── */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 350ms;
+
+    /* ── Z-INDEX ── */
+    --z-base: 0;
+    --z-raised: 10;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 300;
+    --z-modal: 400;
+    --z-toast: 500;
   }
 
   body {
-    background-color: var(--background);
-    color: var(--text-base);
+    @apply bg-[var(--bg-base)] text-[var(--fg-1)] font-body;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    letter-spacing: var(--tracking-normal);
+    -webkit-font-smoothing: antialiased;
   }
 
   * {
-    border-color: var(--border);
+    @apply border-[var(--border-default)];
+  }
+}
+
+/* ── TYPOGRAPHY UTILITIES ── */
+@layer components {
+  .type-display {
+    @apply font-display text-7xl font-extrabold tracking-tight leading-tight;
+  }
+
+  .type-h1 {
+    @apply font-display text-5xl font-extrabold tracking-tight leading-tight;
+  }
+
+  .type-h2 {
+    @apply font-display text-4xl font-bold tracking-tight leading-tight;
+  }
+
+  .type-h3 {
+    @apply font-display text-3xl font-semibold tracking-tight leading-snug;
+  }
+
+  .type-h4 {
+    @apply font-display text-2xl font-semibold leading-snug;
+  }
+
+  .type-h5 {
+    @apply font-body text-lg font-semibold leading-normal;
+  }
+
+  .type-h6 {
+    @apply font-body text-base font-semibold leading-normal;
+  }
+
+  .type-body-lg {
+    @apply font-body text-md font-normal leading-loose;
+  }
+
+  .type-body {
+    @apply font-body text-base font-normal leading-normal;
+  }
+
+  .type-body-sm {
+    @apply font-body text-sm font-normal leading-normal;
+  }
+
+  .type-label {
+    @apply font-body text-xs font-medium tracking-label uppercase;
+  }
+
+  .type-mono {
+    @apply font-mono text-sm font-normal leading-normal;
+  }
+
+  /* ── BUTTON COMPONENT ── */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2.5 rounded-md font-medium transition-all duration-normal cursor-pointer;
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    @apply bg-[var(--accent-gold)] text-[var(--fg-inverse)] hover:bg-[var(--accent-gold-hover)] active:scale-95;
+    box-shadow: var(--shadow-glow-gold);
+  }
+
+  .btn-secondary {
+    @apply bg-[var(--bg-surface-2)] text-[var(--fg-1)] border border-[var(--border-default)] hover:bg-[var(--bg-surface-3)];
+  }
+
+  .btn-tertiary {
+    @apply text-[var(--accent-gold)] hover:bg-[var(--accent-gold-muted)];
+  }
+
+  .btn-danger {
+    @apply bg-[var(--color-error)] text-white hover:opacity-90;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  /* ── CARD COMPONENT ── */
+  .card {
+    @apply bg-[var(--bg-surface-1)] border border-[var(--border-default)] rounded-lg p-4 transition-all duration-normal;
+  }
+
+  .card:hover {
+    @apply border-[var(--border-strong)];
+  }
+
+  /* ── INPUT COMPONENT ── */
+  .input,
+  .textarea,
+  .select {
+    @apply w-full px-3 py-2 bg-[var(--bg-surface-1)] border border-[var(--border-default)] rounded-sm text-[var(--fg-1)] placeholder-[var(--fg-3)] transition-all duration-normal;
+  }
+
+  .input:focus,
+  .textarea:focus,
+  .select:focus {
+    @apply outline-none border-[var(--accent-gold)];
+    box-shadow: var(--shadow-focus);
+  }
+
+  /* ── BADGE / PILL ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-pill text-xs font-medium;
+  }
+
+  .badge-gold {
+    @apply bg-[var(--accent-gold-muted)] text-[var(--accent-gold)];
+  }
+
+  .badge-teal {
+    @apply bg-[var(--accent-teal-muted)] text-[var(--accent-teal)];
+  }
+
+  .badge-success {
+    @apply bg-[var(--color-success-muted)] text-[var(--color-success)];
+  }
+
+  .badge-warning {
+    @apply bg-[var(--color-warning-muted)] text-[var(--color-warning)];
+  }
+
+  .badge-error {
+    @apply bg-[var(--color-error-muted)] text-[var(--color-error)];
+  }
+
+  .badge-info {
+    @apply bg-[var(--color-info-muted)] text-[var(--color-info)];
+  }
+
+  /* ── STATUS BADGES ── */
+  .status-pending {
+    @apply px-3 py-1 rounded-pill text-xs font-medium;
+    background-color: oklch(54% 0.16 75 / 0.1);
+    color: var(--status-pending);
+  }
+
+  .status-reviewing {
+    @apply px-3 py-1 rounded-pill text-xs font-medium;
+    background-color: oklch(50% 0.14 245 / 0.1);
+    color: var(--status-reviewing);
+  }
+
+  .status-interested {
+    @apply px-3 py-1 rounded-pill text-xs font-medium;
+    background-color: oklch(48% 0.16 145 / 0.1);
+    color: var(--status-interested);
+  }
+
+  .status-passed {
+    @apply px-3 py-1 rounded-pill text-xs font-medium;
+    background-color: oklch(50% 0.2 25 / 0.1);
+    color: var(--status-passed);
+  }
+
+  .status-archived {
+    @apply px-3 py-1 rounded-pill text-xs font-medium;
+    background-color: rgba(158, 154, 146, 0.1);
+    color: var(--status-archived);
   }
 }
