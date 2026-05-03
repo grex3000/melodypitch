@@ -20,11 +20,11 @@ export function Button({
   const classes = `${baseClass} ${variantClass} ${sizeClass} ${className}`;
 
   if (asChild) {
-    return (
-      <span className={classes} {...(props as React.HTMLAttributes<HTMLSpanElement>)}>
-        {props.children}
-      </span>
-    );
+    // When asChild is true, clone the child and add the classes
+    const child = React.Children.only(props.children) as React.ReactElement;
+    return React.cloneElement(child, {
+      className: `${classes} ${child.props.className || ''}`,
+    });
   }
 
   return (
