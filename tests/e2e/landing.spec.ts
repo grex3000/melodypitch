@@ -5,14 +5,14 @@ test.describe('Landing Page', () => {
     await page.goto('http://localhost:3000/');
     
     // Check hero section is visible
-    await expect(page.locator('h1')).toContainText('Connect Songwriters with Labels & Artists');
-    await expect(page.getByRole('link', { name: 'Start Free Beta' })).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Where great songs');
+    await expect(page.getByRole('link', { name: 'Get started free' })).toBeVisible();
   });
 
   test('should navigate to register page', async ({ page }) => {
     await page.goto('http://localhost:3000/');
     
-    await page.getByRole('link', { name: 'Start Free Beta' }).click();
+    await page.getByRole('link', { name: 'Get started free' }).click();
     await expect(page).toHaveURL('http://localhost:3000/register');
   });
 
@@ -32,6 +32,6 @@ test.describe('Landing Page', () => {
     
     // Check that content is visible on mobile
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Start Free Beta' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Get started free' })).toBeVisible();
   });
 });

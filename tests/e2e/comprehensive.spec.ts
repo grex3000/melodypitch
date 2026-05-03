@@ -12,15 +12,15 @@ test.describe('MelodyPitch Comprehensive Flow', () => {
     test('should display landing page correctly', async ({ page }) => {
       await page.goto('http://localhost:3000');
       
-      await expect(page.locator('h1')).toContainText('Connect Songwriters');
-      await expect(page.getByRole('link', { name: /Start Free/i })).toBeVisible();
-      await expect(page.getByRole('link', { name: /Learn More/i })).toBeVisible();
+      await expect(page.locator('h1')).toContainText('Where great songs');
+      await expect(page.getByRole('link', { name: /Get started free/i })).toBeVisible();
+      await expect(page.getByRole('link', { name: /See how it works/i })).toBeVisible();
     });
 
     test('should have working navigation buttons', async ({ page }) => {
       await page.goto('http://localhost:3000');
       
-      await page.getByRole('link', { name: /Start Free/i }).click();
+      await page.getByRole('link', { name: /Get started free/i }).click();
       await expect(page).toHaveURL(/.*register/);
     });
 
@@ -29,7 +29,7 @@ test.describe('MelodyPitch Comprehensive Flow', () => {
       await page.goto('http://localhost:3000');
       
       await expect(page.locator('h1')).toBeVisible();
-      const navButton = page.getByRole('link', { name: /Start Free/i });
+      const navButton = page.getByRole('link', { name: /Get started free/i });
       await expect(navButton).toBeVisible();
     });
   });

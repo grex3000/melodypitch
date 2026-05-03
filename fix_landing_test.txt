@@ -1,0 +1,18 @@
+FIXES NEEDED FOR LANDING.SPEC.TS:
+
+Line 8: Change from
+  await expect(page.locator('h1')).toContainText('Connect Songwriters with Labels & Artists');
+To:
+  await expect(page.locator('h1')).toContainText('Where great songs');
+
+Line 15: "Start Free Beta" button doesn't exist, should be "Get started free"
+  Change from:
+    await page.getByRole('link', { name: 'Start Free Beta' }).click();
+  To:
+    await page.getByRole('link', { name: 'Get started free' }).click();
+
+Line 35: Update mobile button text
+  Change from:
+    await expect(page.getByRole('link', { name: 'Start Free Beta' })).toBeVisible();
+  To:
+    await expect(page.getByRole('link', { name: 'Get started free' })).toBeVisible();
