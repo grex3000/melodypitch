@@ -45,6 +45,7 @@ model User {
   label         Label?
   songwriter    Songwriter?
   artistMember  ArtistMember?
+  comments      Comment[] @relation("CommentAuthor")
 }
 
 model Label {
@@ -129,7 +130,8 @@ model Submission {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
-  tracks  Track[]
+  tracks    Track[]
+  comments  Comment[]
 }
 
 model Track {
@@ -193,4 +195,15 @@ model ArtistComment {
   body         String
   timestampSec Int?
   createdAt    DateTime  @default(now())
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
