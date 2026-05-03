@@ -3,16 +3,6 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import type { Role } from '@prisma/client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -33,23 +23,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user in Supabase
+    // Use anon key to create user (user creates their own account)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
     console.log(`[REGISTER] Creating user: ${email}`);
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: {
-        name,
-        role,
+      options: {
+        data: {
+          name,
+          role,
+        },
       },
     });
 
     if (error) {
       console.error(`[REGISTER] Supabase error:`, error);
-      console.error(`[REGISTER] Error message:`, error.message);
-      console.error(`[REGISTER] Error status:`, error.status);
-      console.error(`[REGISTER] Full error:`, JSON.stringify(error, null, 2));
       return NextResponse.json(
         { error: error.message || 'Failed to create account', details: error },
         { status: 400 }
@@ -79,7 +72,6 @@ export async function POST(request: NextRequest) {
     } catch (dbErr) {
       console.error(`[REGISTER] Database error:`, dbErr);
       // User was created in Supabase, so we can still return success
-      // but log the database error for debugging
       console.warn(`[REGISTER] Supabase user created but Prisma failed. User ${data.user.id} may have limited functionality.`);
     }
 
