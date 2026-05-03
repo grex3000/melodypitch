@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabase-server";
 
 const NAV_ITEMS: Record<string, Array<{ href: string; label: string }>> = {
@@ -32,8 +34,13 @@ export default function DashboardShell({
 
   async function handleSignOut() {
     "use server";
-    await supabaseServer.auth.signOut();
-    // Note: In production, use proper SSR cookie handling
+    // Clear session cookies
+    const cookieStore = await cookies();
+    cookieStore.delete('sb-access-token');
+    cookieStore.delete('sb-refresh-token');
+    
+    // Redirect to login
+    redirect('/login');
   }
 
   // Label uses sidebar layout
