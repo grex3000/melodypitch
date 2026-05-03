@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { redirect } from "next/navigation";
+import { db } from '@/lib/db';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -62,11 +63,16 @@ export default function LoginPage({
             });
 
             if (error || !data.session) {
+              console.error('Login error:', error);
+              console.error('Login error message:', error?.message);
+              console.error('Login data:', data);
               return redirect(
                 `/login?error=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
               );
             }
+            console.log('Login successful for:', email);
 
+            // Store session cookies
             const { cookies } = await import('next/headers');
             const cookieStore = await cookies();
             
@@ -74,17 +80,41 @@ export default function LoginPage({
               path: '/',
               httpOnly: true,
               sameSite: 'lax',
-              secure: process.env.NODE_ENV === 'production',
+              secure: false, // Allow localhost HTTP
               maxAge: data.session.expires_in,
             });
+            
             cookieStore.set('sb-refresh-token', data.session.refresh_token, {
               path: '/',
               httpOnly: true,
               sameSite: 'lax',
-              secure: process.env.NODE_ENV === 'production',
+              secure: false, // Allow localhost HTTP
               maxAge: 60 * 60 * 24 * 30,
             });
+            
+            console.log('Session cookies stored');
 
+            // Fetch user role from database to determine dashboard
+            try {
+              const user = await db.user.findUnique({
+                where: { supabaseUserId: data.user.id },
+              });
+
+              if (user) {
+                const dashboardMap: Record<string, string> = {
+                  LABEL: '/label/dashboard',
+                  SONGWRITER: '/songwriter/dashboard',
+                  ARTIST: '/artist/dashboard',
+                };
+                const dashboardUrl = dashboardMap[user.role] || callbackUrl;
+                console.log(`Redirecting ${user.role} to: ${dashboardUrl}`);
+                return redirect(dashboardUrl);
+              }
+            } catch (dbError) {
+              console.error('Error fetching user role:', dbError);
+            }
+
+            // Fallback to callback URL or home
             return redirect(callbackUrl);
           }}
           className="flex flex-col gap-4"
