@@ -47,8 +47,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error(`[REGISTER] Supabase error:`, error);
+      console.error(`[REGISTER] Error message:`, error.message);
+      console.error(`[REGISTER] Error status:`, error.status);
+      console.error(`[REGISTER] Full error:`, JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: error.message || 'Failed to create account' },
+        { error: error.message || 'Failed to create account', details: error },
         { status: 400 }
       );
     }
