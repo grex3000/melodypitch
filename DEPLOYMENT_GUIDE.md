@@ -1,239 +1,430 @@
 # MelodyPitch Deployment Guide
 
-## Domain Architecture Setup
+## Pre-Deployment Checklist
 
-Your MelodyPitch application is now configured for optimal domain structure with `melodypitch.com` pointing to a single Vercel deployment.
-
-## URL Structure
-
-```
-melodypitch.com/                     → Landing page (public)
-melodypitch.com/login                → Login page (public)
-melodypitch.com/register             → Registration page (public)
-melodypitch.com/label/*              → Label dashboard (protected)
-melodypitch.com/songwriter/*         → Songwriter dashboard (protected)
-melodypitch.com/artist/*             → Artist dashboard (protected)
-melodypitch.com/p/[slug]             → Public submission portals (public)
-```
-
-## Application Architecture
-
-### Route Groups (Next.js 13+ App Router)
-
-The application uses **route groups** to organize code logically without affecting URLs:
-
-```
-src/app/
-├── (landing)/              ← Landing page routes
-│   ├── layout.tsx
-│   └── page.tsx           (melodypitch.com/)
-│
-├── (auth)/                ← Authentication routes
-│   ├── login/
-│   │   └── page.tsx       (melodypitch.com/login)
-│   └── register/
-│       └── page.tsx       (melodypitch.com/register)
-│
-├── (app)/                 ← Protected app routes
-│   ├── label/
-│   │   ├── dashboard/
-│   │   ├── portals/
-│   │   ├── library/
-│   │   ├── pitches/
-│   │   ├── analytics/
-│   │   └── layout.tsx     (sidebar layout for labels)
-│   ├── songwriter/
-│   │   ├── dashboard/
-│   │   └── layout.tsx
-│   ├── artist/
-│   │   ├── dashboard/
-│   │   └── layout.tsx
-│   └── layout.tsx         (app wrapper)
-│
-├── p/                     ← Public portals
-│   └── [slug]/
-│       └── page.tsx
-│
-├── api/                   ← API routes
-│   └── upload/
-│
-├── layout.tsx             (root layout - fonts, global CSS)
-└── globals.css
-```
-
-### Key Features
-
-✅ **Single Deployment**: One Vercel project handles all routes
-✅ **Clean URLs**: No subdomains or URL prefixes needed
-✅ **Protected Routes**: Middleware automatically redirects to `/login`
-✅ **SEO-Friendly**: Landing page at root is easily crawlable
-✅ **Scalable**: Easy to add new features without restructuring
-
-## Middleware Protection
-
-The application uses **Next.js middleware** (`src/middleware.ts`) to protect routes:
-
-- **Public paths**: `/`, `/login`, `/register`, `/api/upload`, `/p/*`
-- **Protected paths**: `/label/*`, `/songwriter/*`, `/artist/*`
-
-When unauthenticated users try to access protected routes, they are automatically redirected to `/login`.
-
-```typescript
-// src/middleware.ts
-const PUBLIC_PATHS = ['/', '/login', '/register', '/api/upload']
-const PORTAL_PATH_PATTERN = /^\/p\//;
-
-// Protected routes: /label/*, /songwriter/*, /artist/*
-if (isProtectedRoute && !hasSession) {
-  return NextResponse.redirect(new URL('/login', req.url))
-}
-```
-
-## Authentication Flow
-
-1. **Unauthenticated User** → Visits `melodypitch.com/`
-2. **Lands on Landing Page** → Sees marketing content and CTA
-3. **Clicks "Sign Up"** → Redirects to `melodypitch.com/register`
-4. **Creates Account** → Selects role (Label/Songwriter/Artist)
-5. **Logs In** → Session stored in cookies
-6. **Accesses App** → Middleware allows access to `/label/*`, `/songwriter/*`, or `/artist/*`
-7. **Logs Out** → Session cleared, redirects to login on next protected route visit
-
-## Vercel Deployment Checklist
-
-### Pre-Deployment
-
-- [ ] Domain `melodypitch.com` points to Vercel project
-- [ ] Vercel project connected to Git repository
-- [ ] Environment variables configured in Vercel:
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `DATABASE_URL`
-
-### Deployment Steps
-
-1. **Connect Domain to Vercel**
-   - In Vercel dashboard: Project Settings → Domains
-   - Add `melodypitch.com`
-   - Point domain registrar DNS to Vercel
-   - Wait for SSL certificate (usually instant)
-
-2. **Configure Environment Variables**
-   - Go to Vercel: Settings → Environment Variables
-   - Add all variables from `.env.local`
-   - Ensure they're available in Production environment
-
-3. **Deploy**
-   - Push to Git (automatic deployment)
-   - Or manually: `vercel --prod`
-
-4. **Verify**
-   - Test landing page: `melodypitch.com/`
-   - Test auth: `melodypitch.com/login`
-   - Test protection: Try accessing `/label/dashboard` → should redirect to `/login`
-
-## Environment Variables Required
+### 1. Environment Configuration
+Create `.env.production` with the following variables:
 
 ```bash
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
-SUPABASE_SERVICE_ROLE_KEY=xxx
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Database
-DATABASE_URL=postgresql://...
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Email Configuration
+SEND_EMAILS=true
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASSWORD=your-sendgrid-api-key
+SMTP_SECURE=false
+SMTP_FROM=noreply@melodypitch.com
+
+# Google OAuth (if not already set)
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Application
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://melodypitch.vercel.app
 ```
 
-## Build & Performance
+### 2. Supabase Setup
 
-### Build Output
+#### Create Storage Bucket
+Run in Supabase SQL Editor:
 
-```
-Route (app)                              Size     First Load JS
-├ ○ /                                    9.9 kB         97.1 kB
-├ ○ /_not-found                          873 B          88.1 kB
-├ ƒ /api/upload                          0 B                0 B
-├ ƒ /artist/dashboard                    162 B          87.4 kB
-├ ƒ /label/analytics                     162 B          87.4 kB
-├ ƒ /label/dashboard                     162 B          87.4 kB
-├ ƒ /label/library                       162 B          87.4 kB
-├ ƒ /label/pitches                       162 B          87.4 kB
-├ ƒ /label/portals                       183 B          96.1 kB
-├ ○ /label/portals/new                   1.57 kB        88.8 kB
-├ ƒ /login                               162 B          87.4 kB
-├ ƒ /p/[slug]                            4.85 kB        92.1 kB
-├ ƒ /register                            162 B          87.4 kB
-└ ƒ /songwriter/dashboard                162 B          87.4 kB
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit)
+VALUES ('tracks', 'tracks', true, 83886080)
+ON CONFLICT DO NOTHING;
+
+CREATE POLICY "Public read" ON storage.objects
+FOR SELECT USING (bucket_id = 'tracks');
+
+CREATE POLICY "Authenticated upload" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'tracks' AND auth.role() = 'authenticated');
+
+CREATE POLICY "Delete own files" ON storage.objects
+FOR DELETE USING (bucket_id = 'tracks' AND auth.role() = 'authenticated');
 ```
 
-- `ƒ` = Dynamic (server-rendered on demand)
-- `○` = Static (prerendered as static content)
+#### Run Migrations
+```bash
+npx prisma migrate deploy
+npx prisma db seed  # If you have seed data
+```
 
-### Optimization Tips
+#### Create Test Accounts (for final QA)
+```sql
+-- Add test accounts via SQL or use API
+```
 
-- Landing page is static → fast CDN delivery
-- App routes are dynamic → tailored per user
-- Middleware runs on Edge → fast auth checks
-- No extra redirects needed
+### 3. Google OAuth Setup
 
-## Testing URLs
+1. Go to Google Cloud Console
+2. Create OAuth 2.0 credentials (Web application)
+3. Add authorized redirect URIs:
+   - `https://melodypitch.vercel.app/auth/callback`
+   - `https://your-domain.com/auth/callback`
+4. Set environment variables in production
 
-After deployment, test these URLs:
+### 4. Email Service Setup
+
+#### Option A: SendGrid (Recommended)
+```bash
+# Get API key from https://app.sendgrid.com/settings/api_keys
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASSWORD=SG.xxxx...
+```
+
+#### Option B: Mailgun
+```bash
+SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_USER=postmaster@mg.yourdomain.com
+SMTP_PASSWORD=your-mailgun-password
+```
+
+#### Option C: Gmail
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_SECURE=false
+```
+
+### 5. Custom Domain Setup
+
+1. Register domain (Vercel, Namecheap, GoDaddy, etc.)
+2. Update DNS to point to Vercel
+3. In Vercel dashboard:
+   - Go to Project → Settings → Domains
+   - Add your custom domain
+   - Verify DNS records
+
+### 6. Security Hardening
+
+#### CORS Configuration
+Update in `src/middleware.ts` and Supabase CORS:
+```typescript
+allowedOrigins: [
+  'https://melodypitch.vercel.app',
+  'https://your-domain.com',
+]
+```
+
+#### Security Headers
+Add to `next.config.js`:
+```javascript
+async headers() {
+  return [
+    {
+      source: '/:path*',
+      headers: [
+        {
+          key: 'X-Content-Type-Options',
+          value: 'nosniff'
+        },
+        {
+          key: 'X-Frame-Options',
+          value: 'DENY'
+        },
+        {
+          key: 'X-XSS-Protection',
+          value: '1; mode=block'
+        },
+        {
+          key: 'Referrer-Policy',
+          value: 'strict-origin-when-cross-origin'
+        }
+      ],
+    },
+  ];
+}
+```
+
+#### Rate Limiting
+Install and configure rate limiting middleware:
+```bash
+npm install @upstash/ratelimit
+```
+
+### 7. Monitoring Setup
+
+#### Error Tracking
+Install Sentry:
+```bash
+npm install @sentry/nextjs
+```
+
+Configure in `sentry.client.config.js` and `sentry.server.config.js`:
+```javascript
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  environment: process.env.NODE_ENV,
+});
+```
+
+#### Analytics
+Use Vercel Analytics or Google Analytics:
+```bash
+npm install @vercel/analytics
+```
+
+### 8. Build and Test
 
 ```bash
-# Public routes (should load)
-https://melodypitch.com/
-https://melodypitch.com/login
-https://melodypitch.com/register
-https://melodypitch.com/p/test-portal
+# Build locally
+npm run build
 
-# Protected routes (should redirect to /login)
-https://melodypitch.com/label/dashboard
-https://melodypitch.com/songwriter/dashboard
-https://melodypitch.com/artist/dashboard
+# Test production build
+npm start
 
-# After logging in
-https://melodypitch.com/label/dashboard        (for labels)
-https://melodypitch.com/songwriter/dashboard   (for songwriters)
-https://melodypitch.com/artist/dashboard       (for artists)
+# Check for errors
+npm run lint
+npm run type-check
+
+# Run tests
+npm run test
 ```
 
-## Troubleshooting
+### 9. Database Backup Strategy
 
-### Issue: Landing page shows "Not Found"
-- **Solution**: Ensure `src/app/(landing)/page.tsx` exists
-- **Check**: Run `npm run build` to verify build succeeds
+Set up automated backups in Supabase:
+1. Go to Database → Backups
+2. Enable Point-in-Time Recovery (PITR)
+3. Set backup frequency
 
-### Issue: Protected routes don't redirect to login
-- **Solution**: Verify middleware is active in `src/middleware.ts`
-- **Check**: Cookies are set properly: `sb-access-token` or `sb-refresh-token`
+### 10. Performance Optimization
 
-### Issue: Styles not applying after deployment
-- **Solution**: Clear Vercel cache and redeploy
-- **Command**: `vercel --prod --clear-cache`
+#### Image Optimization
+- Use Next.js Image component for optimization
+- Set `priority` for above-fold images
+- Implement WebP format fallbacks
 
-### Issue: Auth not working
-- **Solution**: Verify Supabase environment variables in Vercel
-- **Check**: Test with: `curl https://melodypitch.com/api/auth`
+#### Database Queries
+- Add indexes to frequently queried fields
+- Use Prisma select for partial queries
+- Implement pagination for large datasets
 
-## Future Enhancements
-
-- [ ] Add analytics (Vercel Analytics)
-- [ ] Set up error tracking (Sentry)
-- [ ] Configure email notifications
-- [ ] Add CDN for file uploads
-- [ ] Set up database backups
-- [ ] Configure monitoring alerts
-
-## Support Resources
-
-- **Next.js Docs**: https://nextjs.org/docs
-- **Vercel Docs**: https://vercel.com/docs
-- **Supabase Docs**: https://supabase.com/docs
-- **Middleware Guide**: https://nextjs.org/docs/advanced-features/middleware
+#### Caching
+- Enable ISR (Incremental Static Regeneration)
+- Use Vercel's edge caching
+- Implement Redis caching for hot data
 
 ---
 
-**Last Updated**: May 3, 2026
-**Status**: ✅ Production Ready
+## Deployment Steps
+
+### Step 1: Prepare Vercel
+
+```bash
+# Link to Vercel
+vercel link
+
+# Set environment variables
+vercel env add NEXT_PUBLIC_SUPABASE_URL
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+vercel env add SUPABASE_SERVICE_ROLE_KEY
+vercel env add DATABASE_URL
+vercel env add SMTP_HOST
+vercel env add SMTP_PORT
+vercel env add SMTP_USER
+vercel env add SMTP_PASSWORD
+vercel env add SEND_EMAILS
+```
+
+### Step 2: Deploy
+
+```bash
+# Deploy to production
+vercel --prod
+
+# Or push to main branch (if using GitHub integration)
+git push origin main
+```
+
+### Step 3: Run Migrations
+
+```bash
+# Run database migrations on production
+npx prisma migrate deploy --skip-generate
+```
+
+### Step 4: Verify Deployment
+
+1. Check Vercel dashboard for successful build
+2. Visit your production URL
+3. Test login flow
+4. Test submission creation
+5. Test file uploads
+6. Verify email sending
+7. Check analytics
+
+### Step 5: Post-Deployment
+
+```bash
+# Create production admin account
+npx ts-node scripts/create-admin.ts
+
+# Seed initial data if needed
+npx prisma db seed
+
+# Monitor logs
+vercel logs --tail
+```
+
+---
+
+## Production Monitoring
+
+### Daily Checks
+- Error rate < 0.1%
+- Page load time < 2s
+- Database response time < 100ms
+- Email delivery success > 99%
+
+### Weekly Checks
+- Review analytics
+- Check storage usage
+- Monitor user growth
+- Review support tickets
+
+### Monthly Checks
+- Performance audit
+- Security audit
+- Cost review
+- Database optimization
+
+---
+
+## Rollback Procedure
+
+If issues occur after deployment:
+
+```bash
+# Revert to previous deployment
+vercel rollback
+
+# Or revert to specific commit
+git revert <commit-hash>
+git push origin main
+```
+
+---
+
+## Troubleshooting
+
+### 401 Unauthorized on Database Queries
+- Check SUPABASE_SERVICE_ROLE_KEY
+- Verify RLS policies aren't blocking queries
+- Check network policies
+
+### Email Not Sending
+- Verify SEND_EMAILS=true
+- Check SMTP credentials
+- Review SendGrid/Mailgun account
+- Check spam folder
+
+### File Uploads Failing
+- Verify 'tracks' bucket exists
+- Check storage bucket permissions
+- Verify file size < 80 MB
+- Check file format is supported
+
+### High Database Costs
+- Review query patterns in Sentry
+- Add database indexes
+- Implement query caching
+- Monitor slow queries
+
+---
+
+## Scaling Recommendations
+
+### As User Base Grows
+
+#### Database
+- Upgrade Supabase plan
+- Implement database sharding
+- Add read replicas
+- Archive old data
+
+#### Storage
+- Move to CDN
+- Implement compression
+- Use different storage tiers
+- Clean up unused files
+
+#### API
+- Implement caching layer
+- Use API rate limiting
+- Add load balancing
+- Monitor endpoint latency
+
+#### Infrastructure
+- Use edge functions for static content
+- Implement worker threads for heavy processing
+- Use background jobs (Bull, RabbitMQ)
+- Monitor memory/CPU usage
+
+---
+
+## Success Metrics
+
+Track these KPIs to monitor application health:
+
+| Metric | Target | Tool |
+|--------|--------|------|
+| Page Load Time | < 2s | Vercel Analytics |
+| Error Rate | < 0.1% | Sentry |
+| Uptime | > 99.9% | Vercel Status |
+| Email Delivery | > 99% | SendGrid Analytics |
+| Database Query Time | < 100ms | Supabase Logs |
+| User Signup Conversion | > 5% | Analytics |
+| Submission Success Rate | > 95% | Custom Metrics |
+
+---
+
+## Support & Documentation
+
+- **Vercel Docs**: https://vercel.com/docs
+- **Next.js Docs**: https://nextjs.org/docs
+- **Supabase Docs**: https://supabase.io/docs
+- **Prisma Docs**: https://www.prisma.io/docs
+
+---
+
+## Go-Live Checklist
+
+- [ ] All environment variables set
+- [ ] Database migrations applied
+- [ ] Storage bucket created
+- [ ] Google OAuth configured
+- [ ] Email service configured
+- [ ] Security headers added
+- [ ] Error tracking enabled
+- [ ] Analytics enabled
+- [ ] Custom domain configured
+- [ ] SSL certificate active
+- [ ] Backups configured
+- [ ] Monitoring set up
+- [ ] Test accounts created
+- [ ] Documentation updated
+- [ ] Team trained on operations
+
+---
+
+**Deployment Date**: ___________  
+**Deployed By**: ___________  
+**Status**: ___________  
+
