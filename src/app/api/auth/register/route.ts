@@ -23,13 +23,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use anon key to create user (user creates their own account)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    console.log(`[REGISTER] Config check:`);
+    console.log(`[REGISTER] URL exists: ${!!supabaseUrl}`);
+    console.log(`[REGISTER] Anon key exists: ${!!supabaseAnonKey}`);
+    console.log(`[REGISTER] URL: ${supabaseUrl}`);
+    console.log(`[REGISTER] Anon key starts with: ${supabaseAnonKey?.substring(0, 20)}`);
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json(
+        { error: 'Missing Supabase configuration' },
+        { status: 500 }
+      );
+    }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    console.log(`[REGISTER] Creating user: ${email}`);
+    console.log(`[REGISTER] Attempting to sign up: ${email}`);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -41,16 +53,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log(`[REGISTER] SignUp response - error: ${!!error}, user: ${!!data?.user}`);
+
     if (error) {
-      console.error(`[REGISTER] Supabase error:`, error);
+      console.error(`[REGISTER] Auth error:`, error.message, error.status);
       return NextResponse.json(
-        { error: error.message || 'Failed to create account', details: error },
+        { error: error.message || 'Failed to create account' },
         { status: 400 }
       );
     }
 
     if (!data.user) {
-      console.error(`[REGISTER] No user returned from Supabase`);
+      console.error(`[REGISTER] No user returned`);
       return NextResponse.json(
         { error: 'Failed to create account' },
         { status: 400 }
@@ -68,11 +82,8 @@ export async function POST(request: NextRequest) {
           role: role as Role,
         },
       });
-      console.log(`[REGISTER] Success: ${email}`);
     } catch (dbErr) {
-      console.error(`[REGISTER] Database error:`, dbErr);
-      // User was created in Supabase, so we can still return success
-      console.warn(`[REGISTER] Supabase user created but Prisma failed. User ${data.user.id} may have limited functionality.`);
+      console.error(`[REGISTER] DB error:`, dbErr);
     }
 
     return NextResponse.json(
@@ -80,7 +91,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (err) {
-    console.error(`[REGISTER] Unexpected error:`, err);
+    console.error(`[REGISTER] Exception:`, err);
     return NextResponse.json(
       { error: 'An unexpected error occurred' },
       { status: 500 }
