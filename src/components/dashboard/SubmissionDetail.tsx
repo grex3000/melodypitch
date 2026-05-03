@@ -37,9 +37,16 @@ interface Submission {
   comments: Comment[];
 }
 
+interface CurrentUser {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
 interface SubmissionDetailProps {
   submissionId: string;
-  currentUser?: { id: string; role: string };
+  currentUser?: CurrentUser;
   onStatusChange?: (status: string) => void;
 }
 

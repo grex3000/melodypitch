@@ -8,6 +8,10 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
+  console.log('[OAUTH CALLBACK] URL:', request.url);
+  console.log('[OAUTH CALLBACK] Code:', code);
+  console.log('[OAUTH CALLBACK] Next:', next);
+
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -15,6 +19,8 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    console.log('[OAUTH CALLBACK] Exchange result - error:', error, 'data:', data);
 
     if (!error && data?.session && data?.user) {
       // Create or update user in database
