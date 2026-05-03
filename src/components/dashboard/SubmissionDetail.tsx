@@ -34,7 +34,7 @@ export default function SubmissionDetail({
   currentUser,
   onStatusChange,
 }: SubmissionDetailProps) {
-  const [submission, setSubmission] = useState<any>(null);
+  const [submission, setSubmission] = useState<Record<string, unknown> | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,10 +159,10 @@ export default function SubmissionDetail({
         </div>
 
         {submission.noteToLabel && (
-          <div className="border-t border-border-default pt-4">
-            <p className="type-label text-fg-2 mb-2">Songwriter's Note</p>
-            <p className="type-body-sm text-fg-2">{submission.noteToLabel}</p>
-          </div>
+           <div className="border-t border-border-default pt-4">
+             <p className="type-label text-fg-2 mb-2">Songwriter&apos;s Note</p>
+             <p className="type-body-sm text-fg-2">{submission.noteToLabel}</p>
+           </div>
         )}
       </div>
 

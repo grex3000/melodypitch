@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { supabaseServer } from "@/lib/supabase-server";
+// import { supabaseServer } from "@/lib/supabase-server";
 
 const NAV_ITEMS: Record<string, Array<{ href: string; label: string }>> = {
   LABEL: [

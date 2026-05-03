@@ -1,9 +1,8 @@
-import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import type { Role } from '@prisma/client';
 
 export default function RegisterPage({

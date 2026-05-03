@@ -4,7 +4,7 @@ import { sendEmail, emailTemplates } from './email';
 export interface NotificationEvent {
   type: 'submission_received' | 'new_submission' | 'status_changed' | 'new_comment';
   userId: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export async function createNotification(event: NotificationEvent) {
@@ -16,13 +16,13 @@ export async function createNotification(event: NotificationEvent) {
 
     if (!user) return;
 
-    let emailTemplate: any;
+    let emailTemplate: Record<string, unknown> | undefined;
 
     switch (event.type) {
       case 'submission_received': {
         // Notify songwriter their submission was received
-        const { labelName, submissionId } = event.data;
-        emailTemplate = emailTemplates.submissionReceived(user.name, labelName);
+        const { labelName } = event.data;
+        emailTemplate = emailTemplates.submissionReceived(user.name, labelName as string);
         break;
       }
 
@@ -69,7 +69,7 @@ export async function createNotification(event: NotificationEvent) {
 export async function notifySubmissionReceived(
   submissionId: string,
   songwriterId: string,
-  portalId: string
+  // portalId: string
 ) {
   const submission = await db.submission.findUnique({
     where: { id: submissionId },

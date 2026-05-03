@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-context';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         songwriterId: songwriter.id,
         noteToLabel: noteToLabel || null,
         tracks: {
-          create: tracks.map((track: any) => ({
+          create: tracks.map((track: Record<string, unknown>) => ({
             title: track.title,
             fileUrl: track.fileUrl,
             fileSizeBytes: track.fileSizeBytes || 0,
