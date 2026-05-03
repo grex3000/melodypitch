@@ -26,7 +26,7 @@ export default function Hero() {
             
             {/* Primary headline - asymmetric, powerful */}
             <h1 className="type-h1 mb-6 text-fg-1 leading-tight">
-              Where great songs
+              Where great songs{' '}
               <br />
               <span className="text-accent-gold">meet their audience</span>
             </h1>
