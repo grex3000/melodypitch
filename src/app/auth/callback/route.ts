@@ -68,7 +68,27 @@ export async function GET(request: NextRequest) {
         maxAge: 60 * 60 * 24 * 30,
       });
 
-      return NextResponse.redirect(new URL(next, request.url));
+      // Determine redirect URL based on user role
+      let redirectUrl = next;
+      try {
+        const user = await db.user.findUnique({
+          where: { supabaseUserId: data.user.id },
+        });
+
+        if (user) {
+          const dashboardMap: Record<string, string> = {
+            LABEL: '/label/dashboard',
+            SONGWRITER: '/songwriter/dashboard',
+            ARTIST: '/artist/dashboard',
+          };
+          redirectUrl = dashboardMap[user.role] || next;
+          console.log(`[OAUTH CALLBACK] Redirecting ${user.role} to: ${redirectUrl}`);
+        }
+      } catch (dbError) {
+        console.error('[OAUTH CALLBACK] Error fetching user role:', dbError);
+      }
+
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
   }
 
