@@ -1,16 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+import { useSearchParams } from 'next/navigation';
 
 export default function GoogleSignInButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
@@ -19,23 +14,24 @@ export default function GoogleSignInButton() {
       setIsLoading(true);
       setError(null);
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
-        },
+      // Call our server API which uses the code exchange flow
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callbackUrl: encodeURIComponent(callbackUrl),
+        }),
       });
 
-      if (error) {
-        setError(error.message);
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        setError(data.error || 'Failed to initiate Google sign in');
         return;
       }
 
-      if (data.url) {
-        router.push(data.url);
-      }
+      // Redirect to Google's OAuth endpoint
+      window.location.href = data.url;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
     } finally {
