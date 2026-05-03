@@ -29,21 +29,21 @@ export async function createNotification(event: NotificationEvent) {
       case 'new_submission': {
         // Notify label of new submission
         const { submitterName, submissionId } = event.data;
-        emailTemplate = emailTemplates.newSubmission(user.name, submitterName, submissionId);
+        emailTemplate = emailTemplates.newSubmission(user.name, submitterName as string, submissionId as string);
         break;
       }
 
       case 'status_changed': {
         // Notify songwriter of status change
         const { oldStatus, newStatus } = event.data;
-        emailTemplate = emailTemplates.statusChanged(user.name, oldStatus, newStatus);
+        emailTemplate = emailTemplates.statusChanged(user.name, oldStatus as string, newStatus as string);
         break;
       }
 
       case 'new_comment': {
         // Notify user of new comment
         const { commenterName, submissionId } = event.data;
-        emailTemplate = emailTemplates.newComment(user.name, commenterName, submissionId);
+        emailTemplate = emailTemplates.newComment(user.name, commenterName as string, submissionId as string);
         break;
       }
 

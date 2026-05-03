@@ -39,8 +39,8 @@ interface Submission {
 
 interface CurrentUser {
   id: string;
-  name?: string;
-  email?: string;
+  name: string;
+  email: string;
   role?: string;
 }
 
