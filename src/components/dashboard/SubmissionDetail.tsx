@@ -23,6 +23,20 @@ interface Comment {
   createdAt: string;
 }
 
+interface Submission {
+  id: string;
+  status: 'NEW' | 'REVIEWED' | 'SHORTLISTED' | 'PITCHED' | 'ARCHIVED';
+  createdAt: string;
+  updatedAt: string;
+  noteToLabel: string | null;
+  tracks: Track[];
+  portal?: {
+    id: string;
+    name: string;
+  };
+  comments: Comment[];
+}
+
 interface SubmissionDetailProps {
   submissionId: string;
   currentUser?: { id: string; role: string };
@@ -34,7 +48,7 @@ export default function SubmissionDetail({
   currentUser,
   onStatusChange,
 }: SubmissionDetailProps) {
-  const [submission, setSubmission] = useState<any | null>(null);
+  const [submission, setSubmission] = useState<Submission | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
