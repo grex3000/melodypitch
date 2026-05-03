@@ -1,6 +1,7 @@
 import Navbar from '@/components/landing/Navbar';
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
+import AudienceSections from '@/components/landing/AudienceSections';
 import HowItWorks from '@/components/landing/HowItWorks';
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
+      <AudienceSections />
       <HowItWorks />
       
       {/* Final CTA Section */}
