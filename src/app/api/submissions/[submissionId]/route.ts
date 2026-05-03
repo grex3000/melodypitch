@@ -107,7 +107,7 @@ export async function PATCH(
     // Update submission
     const updated = await db.submission.update({
       where: { id: submissionId },
-      data: { status: status as any },
+      data: { status: status as 'NEW' | 'REVIEWED' | 'SHORTLISTED' | 'ARCHIVED' },
       include: {
         tracks: true,
         comments: {

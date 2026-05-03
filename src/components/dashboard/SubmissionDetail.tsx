@@ -34,7 +34,7 @@ export default function SubmissionDetail({
   currentUser,
   onStatusChange,
 }: SubmissionDetailProps) {
-  const [submission, setSubmission] = useState<Record<string, unknown> | null>(null);
+  const [submission, setSubmission] = useState<any | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +108,7 @@ export default function SubmissionDetail({
       case 'REVIEWED':
         return 'bg-purple-100 text-purple-800';
       case 'SHORTLISTED':
+      case 'PITCHED':
         return 'bg-yellow-100 text-yellow-800';
       case 'PITCHED':
         return 'bg-green-100 text-green-800';

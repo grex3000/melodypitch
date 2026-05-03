@@ -7,7 +7,11 @@ async function getLabelReceivedSubmissions() {
       include: {
         tracks: true,
         portal: true,
-        songwriter: true,
+        songwriter: {
+          include: {
+            user: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -31,9 +35,9 @@ export default async function LabelDashboard() {
   const stats = {
     total: submissions.length,
     new: submissions.filter((s) => s.status === 'NEW').length,
-    underReview: submissions.filter((s) => s.status === 'UNDER_REVIEW').length,
-    accepted: submissions.filter((s) => s.status === 'SELECTED').length,
-    rejected: submissions.filter((s) => s.status === 'REJECTED').length,
+    underReview: submissions.filter((s) => s.status === 'REVIEWED').length,
+    accepted: submissions.filter((s) => s.status === 'SHORTLISTED').length,
+    rejected: submissions.filter((s) => s.status === 'ARCHIVED').length,
   };
 
   return (
@@ -91,7 +95,7 @@ export default async function LabelDashboard() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="type-h6 text-fg-1 mb-1">
-                        {submission.songwriter?.email || 'Anonymous'}
+                        {submission.songwriter?.user?.email || 'Anonymous'}
                       </h3>
                       <p className="type-body-sm text-fg-3">
                         {submission.tracks.length} track{submission.tracks.length !== 1 ? 's' : ''}
@@ -101,9 +105,9 @@ export default async function LabelDashboard() {
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         submission.status === 'NEW'
                           ? 'bg-blue-100 text-blue-800'
-                          : submission.status === 'UNDER_REVIEW'
+                          : submission.status === 'REVIEWED'
                             ? 'bg-yellow-100 text-yellow-800'
-                            : submission.status === 'SELECTED'
+                            : submission.status === 'SHORTLISTED'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                       }`}

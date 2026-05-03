@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-context';
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -107,12 +107,12 @@ export async function POST(request: NextRequest) {
         noteToLabel: noteToLabel || null,
         tracks: {
           create: tracks.map((track: Record<string, unknown>) => ({
-            title: track.title,
-            fileUrl: track.fileUrl,
-            fileSizeBytes: track.fileSizeBytes || 0,
-            durationSecs: track.durationSecs,
-            genres: track.genres || [],
-            moods: track.moods || [],
+            title: track.title as string,
+            fileUrl: track.fileUrl as string,
+            fileSizeBytes: (track.fileSizeBytes as number) || 0,
+            durationSecs: (track.durationSecs as number) || null,
+            genres: (track.genres as string[]) || [],
+            moods: (track.moods as string[]) || [],
           })),
         },
       },

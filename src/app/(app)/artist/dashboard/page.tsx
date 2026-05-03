@@ -84,7 +84,7 @@ export default async function ArtistDashboard() {
                         )}
                       </div>
                     </div>
-                    <a href={`/p/${portal.shareCode}`} className="btn btn-primary btn-sm">
+                    <a href={`/p/${portal.slug}`} className="btn btn-primary btn-sm">
                       View Details
                     </a>
                   </div>

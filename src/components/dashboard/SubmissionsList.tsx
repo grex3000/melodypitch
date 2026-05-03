@@ -12,8 +12,8 @@ interface Track {
 interface Submission {
   id: string;
   portalId: string;
-  status: 'NEW' | 'UNDER_REVIEW' | 'SELECTED' | 'REJECTED';
-  noteToLabel?: string;
+  status: 'NEW' | 'REVIEWED' | 'SHORTLISTED' | 'PITCHED' | 'ARCHIVED';
+  noteToLabel: string | null;
   createdAt: string;
   tracks: Track[];
 }
@@ -33,11 +33,12 @@ export default function SubmissionsList({
     switch (status) {
       case 'NEW':
         return 'bg-blue-100 text-blue-800';
-      case 'UNDER_REVIEW':
+      case 'REVIEWED':
         return 'bg-yellow-100 text-yellow-800';
-      case 'SELECTED':
+      case 'SHORTLISTED':
+      case 'PITCHED':
         return 'bg-green-100 text-green-800';
-      case 'REJECTED':
+      case 'ARCHIVED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
