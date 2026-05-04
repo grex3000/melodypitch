@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Return to login if there's an error
-  return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
+  // No code param — tokens may be in the URL hash (implicit flow / email confirmation).
+  // Hashes are client-side only, so redirect to a client page that can read them.
+  return NextResponse.redirect(new URL('/auth/confirm', request.url));
 }
