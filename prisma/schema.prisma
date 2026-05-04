@@ -142,6 +142,7 @@ model Track {
   fileUrl       String
   fileSizeBytes Int
   durationSecs  Int?
+  rating        Int?
   genres        String[]
   moods         String[]
   createdAt     DateTime   @default(now())
