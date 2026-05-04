@@ -111,6 +111,8 @@ export default function LoginPage({
             console.log('Session cookies stored');
 
             // Fetch user role from database to determine dashboard
+            // redirect() throws internally, so determine the URL first, then redirect outside try/catch
+            let redirectUrl = callbackUrl;
             try {
               let user = await db.user.findUnique({
                 where: { supabaseUserId: data.user.id },
@@ -138,14 +140,13 @@ export default function LoginPage({
                 SONGWRITER: '/songwriter/dashboard',
                 ARTIST: '/artist/dashboard',
               };
-              const dashboardUrl = dashboardMap[user.role] || callbackUrl;
-              console.log(`Redirecting ${user.role} to: ${dashboardUrl}`);
-              return redirect(dashboardUrl);
+              redirectUrl = dashboardMap[user.role] || callbackUrl;
+              console.log(`Redirecting ${user.role} to: ${redirectUrl}`);
             } catch (dbError) {
               console.error('Error fetching user role:', dbError);
             }
 
-            return redirect(callbackUrl);
+            return redirect(redirectUrl);
           }}
           className="flex flex-col gap-4"
         >
