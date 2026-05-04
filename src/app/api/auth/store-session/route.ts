@@ -8,6 +8,8 @@ interface JWTPayload {
   email: string;
   user_metadata?: {
     full_name?: string;
+    name?: string;
+    role?: string;
   };
 }
 
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
       const decoded = jwtDecode<JWTPayload>(accessToken);
       userId = decoded.sub;
       email = decoded.email;
-      userName = decoded.user_metadata?.full_name || email.split('@')[0];
+      userName = decoded.user_metadata?.name || decoded.user_metadata?.full_name || email.split('@')[0];
       console.log('[STORE SESSION] Decoded user:', { userId, email, userName });
     } catch (err) {
       console.error('[STORE SESSION] Failed to decode JWT:', err);
@@ -71,15 +73,16 @@ export async function POST(request: NextRequest) {
       });
 
       if (!existingUser) {
+        const decoded = jwtDecode<JWTPayload>(accessToken);
+        const metaRole = decoded.user_metadata?.role;
+        const validRoles = ['LABEL', 'SONGWRITER', 'ARTIST'];
+        const role = metaRole && validRoles.includes(metaRole)
+          ? (metaRole as 'LABEL' | 'SONGWRITER' | 'ARTIST')
+          : 'SONGWRITER';
         await db.user.create({
-          data: {
-            supabaseUserId: userId,
-            email,
-            name: userName,
-            role: 'SONGWRITER', // Default role for OAuth users
-          },
+          data: { supabaseUserId: userId, email, name: userName, role },
         });
-        console.log('[STORE SESSION] Created new user:', email);
+        console.log('[STORE SESSION] Created new user:', email, 'role:', role);
       } else {
         console.log('[STORE SESSION] User already exists:', email);
       }

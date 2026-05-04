@@ -110,25 +110,39 @@ export default function LoginPage({
 
             // Fetch user role from database to determine dashboard
             try {
-              const user = await db.user.findUnique({
+              let user = await db.user.findUnique({
                 where: { supabaseUserId: data.user.id },
               });
 
-              if (user) {
-                const dashboardMap: Record<string, string> = {
-                  LABEL: '/label/dashboard',
-                  SONGWRITER: '/songwriter/dashboard',
-                  ARTIST: '/artist/dashboard',
-                };
-                const dashboardUrl = dashboardMap[user.role] || callbackUrl;
-                console.log(`Redirecting ${user.role} to: ${dashboardUrl}`);
-                return redirect(dashboardUrl);
+              // Create Prisma record if missing (e.g. confirmed via email link)
+              if (!user) {
+                const metaRole = data.user.user_metadata?.role as string | undefined;
+                const validRoles = ['LABEL', 'SONGWRITER', 'ARTIST'];
+                const role = metaRole && validRoles.includes(metaRole)
+                  ? (metaRole as 'LABEL' | 'SONGWRITER' | 'ARTIST')
+                  : 'SONGWRITER';
+                user = await db.user.create({
+                  data: {
+                    supabaseUserId: data.user.id,
+                    email: data.user.email!,
+                    name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
+                    role,
+                  },
+                });
               }
+
+              const dashboardMap: Record<string, string> = {
+                LABEL: '/label/dashboard',
+                SONGWRITER: '/songwriter/dashboard',
+                ARTIST: '/artist/dashboard',
+              };
+              const dashboardUrl = dashboardMap[user.role] || callbackUrl;
+              console.log(`Redirecting ${user.role} to: ${dashboardUrl}`);
+              return redirect(dashboardUrl);
             } catch (dbError) {
               console.error('Error fetching user role:', dbError);
             }
 
-            // Fallback to callback URL or home
             return redirect(callbackUrl);
           }}
           className="flex flex-col gap-4"
