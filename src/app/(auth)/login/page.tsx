@@ -13,8 +13,10 @@ function createLoginClient() {
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { callbackUrl?: string; error?: string; registered?: string };
+  searchParams: { callbackUrl?: string; error?: string; registered?: string; confirm?: string };
 }) {
+  const isUnconfirmed = searchParams.error === 'unconfirmed';
+
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-bg-base">
       <div className="w-full max-w-md bg-bg-surface-1 rounded-lg p-8 border border-border-default">
@@ -25,15 +27,27 @@ export default function LoginPage({
           Enter your credentials to continue.
         </p>
 
-        {searchParams.registered && (
+        {searchParams.registered && !searchParams.confirm && (
           <p className="type-body-sm text-success bg-success-muted px-3 py-2 rounded-md mb-4">
             Account created! Please sign in.
           </p>
         )}
 
-        {searchParams.error && (
+        {searchParams.registered && searchParams.confirm && (
+          <p className="type-body-sm text-success bg-success-muted px-3 py-2 rounded-md mb-4">
+            Account created! Check your email and click the confirmation link before signing in.
+          </p>
+        )}
+
+        {searchParams.error && !isUnconfirmed && (
           <p className="type-body-sm text-error bg-error-muted px-3 py-2 rounded-md mb-4">
             Invalid email or password.
+          </p>
+        )}
+
+        {isUnconfirmed && (
+          <p className="type-body-sm text-error bg-error-muted px-3 py-2 rounded-md mb-4">
+            Please confirm your email first — check your inbox for a link from MelodyPitch.
           </p>
         )}
 
@@ -63,11 +77,11 @@ export default function LoginPage({
             });
 
             if (error || !data.session) {
-              console.error('Login error:', error);
-              console.error('Login error message:', error?.message);
-              console.error('Login data:', data);
+              console.error('Login error:', error?.message);
+              const isEmailNotConfirmed = error?.message?.toLowerCase().includes('not confirmed');
+              const errorParam = isEmailNotConfirmed ? 'unconfirmed' : '1';
               return redirect(
-                `/login?error=1&callbackUrl=${encodeURIComponent(callbackUrl)}`
+                `/login?error=${errorParam}&callbackUrl=${encodeURIComponent(callbackUrl)}`
               );
             }
             console.log('Login successful for:', email);

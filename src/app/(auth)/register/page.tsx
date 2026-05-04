@@ -40,8 +40,12 @@ export default function RegisterPage({
         return;
       }
 
-      // Success - redirect to login
-      router.push('/login?registered=1');
+      // Success - if email confirmation required, show message; otherwise redirect to login
+      if (data.needsConfirmation) {
+        router.push('/login?registered=1&confirm=1');
+      } else {
+        router.push('/login?registered=1');
+      }
     } catch (err) {
       console.error('Registration error:', err);
       setError('An error occurred. Please try again.');

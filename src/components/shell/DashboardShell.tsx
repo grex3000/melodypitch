@@ -131,6 +131,17 @@ export default function DashboardShell({
               {item.label}
             </Link>
           ))}
+          <div className="md:hidden flex flex-col gap-2 border-t border-border-default mt-2 pt-2">
+            <span className="type-body-sm text-fg-2">{userName}</span>
+            <form action={handleSignOut}>
+              <button
+                type="submit"
+                className="type-body-sm text-fg-2 hover:text-fg-1 transition-colors"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">

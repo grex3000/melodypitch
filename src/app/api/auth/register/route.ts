@@ -41,15 +41,15 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
     console.log(`[REGISTER] Attempting to sign up: ${email}`);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          name,
-          role,
-        },
+        data: { name, role },
+        emailRedirectTo: `${appUrl}/auth/callback`,
       },
     });
 
@@ -86,8 +86,10 @@ export async function POST(request: NextRequest) {
       console.error(`[REGISTER] DB error:`, dbErr);
     }
 
+    const needsConfirmation = !data.user.email_confirmed_at;
+
     return NextResponse.json(
-      { success: true, userId: data.user.id },
+      { success: true, userId: data.user.id, needsConfirmation },
       { status: 201 }
     );
   } catch (err) {
