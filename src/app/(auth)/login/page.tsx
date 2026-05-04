@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { redirect } from "next/navigation";
 import { db } from '@/lib/db';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import LoginSubmitButton from '@/components/auth/LoginSubmitButton';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -89,20 +90,21 @@ export default function LoginPage({
             // Store session cookies
             const { cookies } = await import('next/headers');
             const cookieStore = await cookies();
-            
+            const isProduction = process.env.NODE_ENV === 'production';
+
             cookieStore.set('sb-access-token', data.session.access_token, {
               path: '/',
               httpOnly: true,
               sameSite: 'lax',
-              secure: false, // Allow localhost HTTP
+              secure: isProduction,
               maxAge: data.session.expires_in,
             });
-            
+
             cookieStore.set('sb-refresh-token', data.session.refresh_token, {
               path: '/',
               httpOnly: true,
               sameSite: 'lax',
-              secure: false, // Allow localhost HTTP
+              secure: isProduction,
               maxAge: 60 * 60 * 24 * 30,
             });
             
@@ -175,12 +177,7 @@ export default function LoginPage({
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg mt-2"
-          >
-            Sign in
-          </button>
+          <LoginSubmitButton />
         </form>
 
         <p className="type-body-sm text-fg-2 mt-6 text-center">
