@@ -114,25 +114,41 @@ export default function LoginPage({
             // redirect() throws internally, so determine the URL first, then redirect outside try/catch
             let redirectUrl = callbackUrl;
             try {
+              console.log('[LOGIN] Looking up DB user for supabaseUserId:', data.user.id);
               let user = await db.user.findUnique({
                 where: { supabaseUserId: data.user.id },
               });
+              console.log('[LOGIN] DB user found:', user ? `${user.email} role=${user.role}` : 'null');
 
-              // Create Prisma record if missing (e.g. confirmed via email link)
               if (!user) {
-                const metaRole = data.user.user_metadata?.role as string | undefined;
-                const validRoles = ['LABEL', 'SONGWRITER', 'ARTIST'];
-                const role = metaRole && validRoles.includes(metaRole)
-                  ? (metaRole as 'LABEL' | 'SONGWRITER' | 'ARTIST')
-                  : 'SONGWRITER';
-                user = await db.user.create({
-                  data: {
-                    supabaseUserId: data.user.id,
-                    email: data.user.email!,
-                    name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
-                    role,
-                  },
+                // supabaseUserId may have changed (e.g. re-registered) — look up by email
+                const byEmail = await db.user.findUnique({
+                  where: { email: data.user.email! },
                 });
+
+                if (byEmail) {
+                  // Update to the current supabaseUserId
+                  user = await db.user.update({
+                    where: { email: data.user.email! },
+                    data: { supabaseUserId: data.user.id },
+                  });
+                  console.log('[LOGIN] Updated supabaseUserId for:', data.user.email);
+                } else {
+                  const metaRole = data.user.user_metadata?.role as string | undefined;
+                  const validRoles = ['LABEL', 'SONGWRITER', 'ARTIST'];
+                  const role = metaRole && validRoles.includes(metaRole)
+                    ? (metaRole as 'LABEL' | 'SONGWRITER' | 'ARTIST')
+                    : 'SONGWRITER';
+                  user = await db.user.create({
+                    data: {
+                      supabaseUserId: data.user.id,
+                      email: data.user.email!,
+                      name: data.user.user_metadata?.name || data.user.email!.split('@')[0],
+                      role,
+                    },
+                  });
+                  console.log('[LOGIN] Created new DB user for:', data.user.email);
+                }
               }
 
               const dashboardMap: Record<string, string> = {
