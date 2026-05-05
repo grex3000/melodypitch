@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { PitchPackageWithItems, PitchItemWithDetails, PitchComment } from "@/lib/pitches";
 import type { TrackVerdict, Role } from "@prisma/client";
 import PitchTrackList from "./PitchTrackList";
@@ -28,8 +28,14 @@ export default function PitchShell({
   );
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
 
-  const playingItem = items.find((i) => i.id === playingItemId) ?? null;
-  const selectedItem = items.find((i) => i.id === selectedItemId) ?? null;
+  const playingItem = useMemo(
+    () => items.find((i) => i.id === playingItemId) ?? null,
+    [items, playingItemId]
+  );
+  const selectedItem = useMemo(
+    () => items.find((i) => i.id === selectedItemId) ?? null,
+    [items, selectedItemId]
+  );
 
   const handlePlay = useCallback(
     (item: PitchItemWithDetails) => {
@@ -72,10 +78,16 @@ export default function PitchShell({
     []
   );
 
-  const counts = { APPROVED: 0, HOLD: 0, DECLINED: 0, PENDING: 0 };
-  items.forEach((i) => {
-    counts[i.verdict]++;
-  });
+  const handleSelect = useCallback(
+    (item: PitchItemWithDetails) => setSelectedItemId(item.id),
+    []
+  );
+
+  const counts = useMemo(() => {
+    const c = { APPROVED: 0, HOLD: 0, DECLINED: 0, PENDING: 0 };
+    items.forEach((i) => { c[i.verdict]++; });
+    return c;
+  }, [items]);
 
   return (
     <div
@@ -85,6 +97,7 @@ export default function PitchShell({
         paddingBottom: playingItem ? "4rem" : "0",
       }}
     >
+      {/* pkg is passed for the header only (name/artist/note); items drives the track list */}
       <PitchTrackList
         pkg={pkg}
         items={items}
@@ -93,7 +106,7 @@ export default function PitchShell({
         selectedItemId={selectedItemId}
         counts={counts}
         onPlay={handlePlay}
-        onSelect={(item) => setSelectedItemId(item.id)}
+        onSelect={handleSelect}
       />
 
       <PitchDetailPanel
