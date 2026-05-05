@@ -134,7 +134,7 @@ export async function createPitchPackage(
   });
 
   const tracks = await db.track.findMany({
-    where: { id: { in: data.trackIds } },
+    where: { id: { in: data.trackIds }, submission: { portal: { labelId } } },
     select: { submissionId: true },
   });
   const submissionIds = Array.from(new Set(tracks.map((t) => t.submissionId)));
