@@ -22,7 +22,10 @@ export default async function NewPitchPage({ searchParams }: PageProps) {
 
   const [tracks, artists] = await Promise.all([
     db.track.findMany({
-      where: { id: { in: trackIds } },
+      where: {
+        id: { in: trackIds },
+        submission: { portal: { labelId: label.id } },
+      },
       include: {
         submission: {
           include: {

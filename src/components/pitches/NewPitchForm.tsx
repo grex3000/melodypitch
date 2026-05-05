@@ -121,7 +121,7 @@ export default function NewPitchForm({ tracks, artists, labelId }: NewPitchFormP
         />
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
 
       <div className="flex gap-3">
         <button
@@ -133,7 +133,7 @@ export default function NewPitchForm({ tracks, artists, labelId }: NewPitchFormP
         </button>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/label/library")}
           className="btn btn-secondary"
         >
           Cancel

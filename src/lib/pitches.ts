@@ -1,5 +1,6 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import type {
   PitchPackage,
@@ -114,6 +115,12 @@ export async function createPitchPackage(
   labelId: string,
   data: { name: string; note: string | null; artistId: string; trackIds: string[] }
 ): Promise<{ id: string }> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "LABEL") throw new Error("Unauthorized");
+
+  const label = await db.label.findUnique({ where: { userId: user.id } });
+  if (!label || label.id !== labelId) throw new Error("Forbidden");
+
   const pkg = await db.pitchPackage.create({
     data: {
       labelId,
