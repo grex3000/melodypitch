@@ -112,14 +112,14 @@ export async function getArtistsList(): Promise<Pick<Artist, "id" | "name">[]> {
 
 export async function createPitchPackage(
   labelId: string,
-  data: { name: string; note: string; artistId: string; trackIds: string[] }
+  data: { name: string; note: string | null; artistId: string; trackIds: string[] }
 ): Promise<{ id: string }> {
   const pkg = await db.pitchPackage.create({
     data: {
       labelId,
       artistId: data.artistId,
       name: data.name,
-      note: data.note || null,
+      note: data.note ?? null,
       items: {
         create: data.trackIds.map((trackId) => ({ trackId })),
       },
