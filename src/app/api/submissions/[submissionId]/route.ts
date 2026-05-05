@@ -2,27 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-context';
 
-async function fetchSubmissionWithOwnership(submissionId: string) {
-  return db.submission.findUnique({
-    where: { id: submissionId },
-    include: {
-      songwriter: true,
-      portal: { include: { label: true } },
-    },
-  });
-}
-
-function canReadSubmission(
-  submission: Awaited<ReturnType<typeof fetchSubmissionWithOwnership>>,
-  userId: string,
-  role: string
-): boolean {
-  if (!submission) return false;
-  if (role === 'LABEL') return submission.portal?.label?.userId === userId;
-  if (role === 'SONGWRITER') return submission.songwriter?.userId === userId;
-  return false;
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { submissionId: string } }
@@ -40,9 +19,7 @@ export async function GET(
       include: {
         tracks: true,
         songwriter: true,
-        portal: {
-          include: { label: true },
-        },
+        portal: { include: { label: true } },
         comments: {
           include: {
             author: { select: { id: true, name: true, email: true } },
@@ -56,7 +33,11 @@ export async function GET(
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    if (!canReadSubmission(submission, currentUser.id, currentUser.role)) {
+    const canRead =
+      (currentUser.role === 'LABEL' && submission.portal?.label?.userId === currentUser.id) ||
+      (currentUser.role === 'SONGWRITER' && submission.songwriter?.userId === currentUser.id);
+
+    if (!canRead) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -2,27 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-context';
 
-async function getSubmissionOwnership(submissionId: string) {
-  return db.submission.findUnique({
-    where: { id: submissionId },
-    include: {
-      songwriter: true,
-      portal: { include: { label: true } },
-    },
-  });
-}
-
-function canAccessSubmission(
-  submission: Awaited<ReturnType<typeof getSubmissionOwnership>>,
-  userId: string,
-  role: string
-): boolean {
-  if (!submission) return false;
-  if (role === 'LABEL') return submission.portal?.label?.userId === userId;
-  if (role === 'SONGWRITER') return submission.songwriter?.userId === userId;
-  return false;
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { submissionId: string } }
@@ -35,12 +14,23 @@ export async function GET(
 
     const { submissionId } = params;
 
-    const submission = await getSubmissionOwnership(submissionId);
+    const submission = await db.submission.findUnique({
+      where: { id: submissionId },
+      include: {
+        songwriter: true,
+        portal: { include: { label: true } },
+      },
+    });
+
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    if (!canAccessSubmission(submission, currentUser.id, currentUser.role)) {
+    const canRead =
+      (currentUser.role === 'LABEL' && submission.portal?.label?.userId === currentUser.id) ||
+      (currentUser.role === 'SONGWRITER' && submission.songwriter?.userId === currentUser.id);
+
+    if (!canRead) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -82,7 +72,11 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const submission = await getSubmissionOwnership(submissionId);
+    const submission = await db.submission.findUnique({
+      where: { id: submissionId },
+      include: { portal: { include: { label: true } } },
+    });
+
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
