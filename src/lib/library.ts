@@ -1,5 +1,6 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import type {
   Track,
@@ -114,39 +115,57 @@ export async function getPortalsForLabel(labelId: string): Promise<PortalSummary
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
+async function requireLabelUser() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "LABEL") throw new Error("Unauthorized");
+  const label = await db.label.findUnique({ where: { userId: user.id } });
+  if (!label) throw new Error("Forbidden");
+  return { user, label };
+}
+
 export async function updateSubmissionStatus(
   submissionId: string,
   status: SubmissionStatus
 ): Promise<void> {
-  await db.submission.update({
-    where: { id: submissionId },
+  const { label } = await requireLabelUser();
+  const result = await db.submission.updateMany({
+    where: { id: submissionId, portal: { labelId: label.id } },
     data: { status },
   });
+  if (result.count === 0) throw new Error("Forbidden");
 }
 
 export async function setTrackRating(
   trackId: string,
   rating: number | null
 ): Promise<void> {
-  await db.track.update({
-    where: { id: trackId },
+  const { label } = await requireLabelUser();
+  const result = await db.track.updateMany({
+    where: { id: trackId, submission: { portal: { labelId: label.id } } },
     data: { rating },
   });
+  if (result.count === 0) throw new Error("Forbidden");
 }
 
 export async function addLabelNote(
   trackId: string,
-  authorId: string,
   body: string
 ): Promise<LabelNote> {
+  const { user, label } = await requireLabelUser();
+  const track = await db.track.findFirst({
+    where: { id: trackId, submission: { portal: { labelId: label.id } } },
+    select: { id: true },
+  });
+  if (!track) throw new Error("Forbidden");
   return db.labelNote.create({
-    data: { trackId, authorId, body },
+    data: { trackId, authorId: user.id, body },
   });
 }
 
 export async function archiveSubmissions(submissionIds: string[]): Promise<void> {
+  const { label } = await requireLabelUser();
   await db.submission.updateMany({
-    where: { id: { in: submissionIds } },
+    where: { id: { in: submissionIds }, portal: { labelId: label.id } },
     data: { status: "ARCHIVED" },
   });
 }

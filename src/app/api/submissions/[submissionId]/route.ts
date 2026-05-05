@@ -2,41 +2,62 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-context';
 
+async function fetchSubmissionWithOwnership(submissionId: string) {
+  return db.submission.findUnique({
+    where: { id: submissionId },
+    include: {
+      songwriter: true,
+      portal: { include: { label: true } },
+    },
+  });
+}
+
+function canReadSubmission(
+  submission: Awaited<ReturnType<typeof fetchSubmissionWithOwnership>>,
+  userId: string,
+  role: string
+): boolean {
+  if (!submission) return false;
+  if (role === 'LABEL') return submission.portal?.label?.userId === userId;
+  if (role === 'SONGWRITER') return submission.songwriter?.userId === userId;
+  return false;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { submissionId: string } }
 ) {
   try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { submissionId } = params;
 
     const submission = await db.submission.findUnique({
       where: { id: submissionId },
       include: {
         tracks: true,
+        songwriter: true,
         portal: {
-          include: {
-            label: true,
-          },
+          include: { label: true },
         },
         comments: {
           include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
+            author: { select: { id: true, name: true, email: true } },
           },
-          orderBy: {
-            createdAt: 'desc',
-          },
+          orderBy: { createdAt: 'desc' },
         },
       },
     });
 
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+    }
+
+    if (!canReadSubmission(submission, currentUser.id, currentUser.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     return NextResponse.json({
@@ -63,17 +84,19 @@ export async function PATCH(
 ) {
   try {
     const { submissionId } = params;
-    
-    // Get current user
+
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (currentUser.role !== 'LABEL') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { status } = body;
 
-    // Validate status
     const validStatuses = ['NEW', 'REVIEWED', 'SHORTLISTED', 'PITCHED', 'ARCHIVED'];
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
@@ -82,29 +105,19 @@ export async function PATCH(
       );
     }
 
-    // Get submission to check permissions
     const submission = await db.submission.findUnique({
       where: { id: submissionId },
-      include: {
-        portal: {
-          include: {
-            label: true,
-          },
-        },
-      },
+      include: { portal: { include: { label: true } } },
     });
 
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    // Check if user can update this submission
-    // Only the label who received it can update status
-    if (submission.portal?.label?.userId !== currentUser.id && currentUser.role !== 'LABEL') {
+    if (submission.portal?.label?.userId !== currentUser.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Update submission
     const updated = await db.submission.update({
       where: { id: submissionId },
       data: { status: status as 'NEW' | 'REVIEWED' | 'SHORTLISTED' | 'ARCHIVED' },
@@ -112,13 +125,7 @@ export async function PATCH(
         tracks: true,
         comments: {
           include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
+            author: { select: { id: true, name: true, email: true } },
           },
         },
       },

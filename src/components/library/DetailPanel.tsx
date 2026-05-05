@@ -17,11 +17,10 @@ const STATUS_PIPELINE: SubmissionStatus[] = [
 
 interface DetailPanelProps {
   track: LibraryTrack | null;
-  labelUserId: string;
   onClose: () => void;
 }
 
-export default function DetailPanel({ track, labelUserId, onClose }: DetailPanelProps) {
+export default function DetailPanel({ track, onClose }: DetailPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -179,7 +178,6 @@ export default function DetailPanel({ track, labelUserId, onClose }: DetailPanel
             <p className="text-xs font-medium text-fg-3 mb-3">Label notes</p>
             <NoteThread
               trackId={track.id}
-              authorId={labelUserId}
               notes={track.labelNotes}
             />
           </div>

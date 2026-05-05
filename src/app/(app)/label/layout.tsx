@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function LabelLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   
-  if (!user) {
+  if (!user || user.role !== "LABEL") {
     redirect('/login');
   }
 

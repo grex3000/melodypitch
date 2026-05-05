@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function ArtistLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   
-  if (!user) {
+  if (!user || user.role !== "ARTIST") {
     redirect('/login');
   }
 
