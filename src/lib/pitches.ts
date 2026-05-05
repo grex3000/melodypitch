@@ -146,12 +146,24 @@ export async function createPitchPackage(
   return { id: pkg.id };
 }
 
+async function verifyArtistOwnsItem(userId: string, itemId: string): Promise<void> {
+  const member = await db.artistMember.findUnique({ where: { userId } });
+  if (!member) throw new Error("Forbidden");
+
+  const item = await db.pitchItem.findUnique({
+    where: { id: itemId },
+    select: { package: { select: { artistId: true } } },
+  });
+  if (!item || item.package.artistId !== member.artistId) throw new Error("Forbidden");
+}
+
 export async function setItemVerdict(
   itemId: string,
   verdict: TrackVerdict
 ): Promise<void> {
   const user = await getCurrentUser();
   if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+  await verifyArtistOwnsItem(user.id, itemId);
 
   await db.pitchItem.update({
     where: { id: itemId },
@@ -165,6 +177,7 @@ export async function setItemRating(
 ): Promise<void> {
   const user = await getCurrentUser();
   if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+  await verifyArtistOwnsItem(user.id, itemId);
 
   await db.pitchItem.update({
     where: { id: itemId },
@@ -179,6 +192,7 @@ export async function addArtistComment(
 ): Promise<void> {
   const user = await getCurrentUser();
   if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+  await verifyArtistOwnsItem(user.id, itemId);
 
   await db.artistComment.create({
     data: {
