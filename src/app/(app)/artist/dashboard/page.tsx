@@ -56,7 +56,7 @@ export default async function ArtistDashboard() {
         </div>
 
         <div>
-          <h2 className="type-h4 text-fg-1 mb-6">Pitch Packages</h2>
+          <h2 className="type-h4 text-fg-1 mb-6">All Packages</h2>
           {packages.length === 0 ? (
             <div className="bg-bg-surface-1 border border-border-default rounded-lg p-12 text-center">
               <p className="type-body-sm text-fg-2">
