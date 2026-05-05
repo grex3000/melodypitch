@@ -46,6 +46,7 @@ model User {
   songwriter    Songwriter?
   artistMember  ArtistMember?
   comments      Comment[] @relation("CommentAuthor")
+  artistComments ArtistComment[] @relation("ArtistCommentAuthor")
 }
 
 model Label {
@@ -193,6 +194,7 @@ model ArtistComment {
   pitchItemId  String
   pitchItem    PitchItem @relation(fields: [pitchItemId], references: [id], onDelete: Cascade)
   authorId     String
+  author       User      @relation("ArtistCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   body         String
   timestampSec Int?
   createdAt    DateTime  @default(now())
