@@ -118,7 +118,7 @@ export default function PitchAudioPlayer({
           onChange={(e) => {
             const t = Number(e.target.value);
             setCurrentTime(t);
-            onTimeUpdate(t);
+            // Note: do NOT call onTimeUpdate here — only the audio element's onTimeUpdate drives parent time
             if (audioRef.current) audioRef.current.currentTime = t;
           }}
           className="flex-1 h-1 accent-accent-gold"

@@ -150,6 +150,9 @@ export async function setItemVerdict(
   itemId: string,
   verdict: TrackVerdict
 ): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+
   await db.pitchItem.update({
     where: { id: itemId },
     data: { verdict },
@@ -160,6 +163,9 @@ export async function setItemRating(
   itemId: string,
   rating: number | null
 ): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+
   await db.pitchItem.update({
     where: { id: itemId },
     data: { artistRating: rating },
@@ -168,14 +174,16 @@ export async function setItemRating(
 
 export async function addArtistComment(
   itemId: string,
-  authorId: string,
   body: string,
   timestampSec?: number
 ): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ARTIST") throw new Error("Unauthorized");
+
   await db.artistComment.create({
     data: {
       pitchItemId: itemId,
-      authorId,
+      authorId: user.id,
       body,
       timestampSec: timestampSec ?? null,
     },

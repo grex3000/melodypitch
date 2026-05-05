@@ -60,8 +60,8 @@ export default function PitchDetailPanel({
   onCommentAdded,
 }: PitchDetailPanelProps) {
   const router = useRouter();
-  const [, startVerdictTransition] = useTransition();
-  const [, startRatingTransition] = useTransition();
+  const [isPendingVerdict, startVerdictTransition] = useTransition();
+  const [isPendingRating, startRatingTransition] = useTransition();
   const [isPendingComment, startCommentTransition] = useTransition();
   const [commentBody, setCommentBody] = useState("");
   const [includeTimestamp, setIncludeTimestamp] = useState(false);
@@ -78,27 +78,29 @@ export default function PitchDetailPanel({
     item.track.submission.songwriter?.user.name ?? "Anonymous";
 
   function handleVerdict(verdict: TrackVerdict) {
+    if (!item) return;
     const newVerdict: TrackVerdict =
-      item!.verdict === verdict ? "PENDING" : verdict;
-    onVerdictChange(item!.id, newVerdict);
+      item.verdict === verdict ? "PENDING" : verdict;
+    onVerdictChange(item.id, newVerdict);
     startVerdictTransition(async () => {
-      await setItemVerdict(item!.id, newVerdict);
+      await setItemVerdict(item.id, newVerdict);
       router.refresh();
     });
   }
 
   function handleRating(star: number) {
-    const newRating = item!.artistRating === star ? null : star;
-    onRatingChange(item!.id, newRating);
+    if (!item) return;
+    const newRating = item.artistRating === star ? null : star;
+    onRatingChange(item.id, newRating);
     startRatingTransition(async () => {
-      await setItemRating(item!.id, newRating);
+      await setItemRating(item.id, newRating);
       router.refresh();
     });
   }
 
   function handleSendComment(e: React.FormEvent) {
     e.preventDefault();
-    if (!commentBody.trim()) return;
+    if (!item || !commentBody.trim()) return;
 
     const body = commentBody.trim();
     const timestampSec = includeTimestamp
@@ -107,19 +109,19 @@ export default function PitchDetailPanel({
 
     const optimistic: PitchComment = {
       id: `optimistic-${Date.now()}`,
-      pitchItemId: item!.id,
+      pitchItemId: item.id,
       authorId: currentUserId,
       author: { id: currentUserId, name: currentUserName, role: currentUserRole },
       body,
       timestampSec: timestampSec ?? null,
       createdAt: new Date(),
     };
-    onCommentAdded(item!.id, optimistic);
+    onCommentAdded(item.id, optimistic);
     setCommentBody("");
     setIncludeTimestamp(false);
 
     startCommentTransition(async () => {
-      await addArtistComment(item!.id, currentUserId, body, timestampSec);
+      await addArtistComment(item.id, body, timestampSec);
       router.refresh();
     });
   }
@@ -161,7 +163,8 @@ export default function PitchDetailPanel({
               <button
                 key={star}
                 onClick={() => handleRating(star)}
-                className={`text-2xl transition-colors ${
+                disabled={isPendingRating}
+                className={`text-2xl transition-colors disabled:opacity-50 ${
                   item.artistRating != null && star <= item.artistRating
                     ? "text-accent-gold"
                     : "text-border-default hover:text-accent-gold/60"
@@ -184,7 +187,8 @@ export default function PitchDetailPanel({
               <button
                 key={verdict}
                 onClick={() => handleVerdict(verdict)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                disabled={isPendingVerdict}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50 ${
                   item.verdict === verdict
                     ? activeClass
                     : `border-border-default text-fg-2 ${hoverClass}`
