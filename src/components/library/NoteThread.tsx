@@ -7,7 +7,6 @@ import type { LabelNote } from "@prisma/client";
 
 interface NoteThreadProps {
   trackId: string;
-  authorId: string;
   notes: LabelNote[];
 }
 
@@ -20,7 +19,7 @@ function formatDate(date: Date | string): string {
   });
 }
 
-export default function NoteThread({ trackId, authorId, notes }: NoteThreadProps) {
+export default function NoteThread({ trackId, notes }: NoteThreadProps) {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -29,7 +28,7 @@ export default function NoteThread({ trackId, authorId, notes }: NoteThreadProps
     e.preventDefault();
     if (!body.trim()) return;
     startTransition(async () => {
-      await addLabelNote(trackId, authorId, body.trim());
+      await addLabelNote(trackId, body.trim());
       setBody("");
       router.refresh();
     });

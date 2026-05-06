@@ -1,28 +1,27 @@
+import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
 export default async function LabelPortalsPage() {
-  const user = await db.user.findFirst({
-    where: { role: 'LABEL' },
+  const user = await getCurrentUser();
+  if (!user || user.role !== "LABEL") redirect("/login");
+
+  const label = await db.label.findUnique({
+    where: { userId: user.id },
     include: {
-      label: {
+      portals: {
+        orderBy: { createdAt: "desc" },
         include: {
-          portals: {
-            orderBy: { createdAt: "desc" },
-            include: {
-              _count: { select: { submissions: true } },
-            },
-          },
+          _count: { select: { submissions: true } },
         },
       },
     },
   });
 
-  if (!user?.label) return <div>Label profile not found</div>;
-
-  const label = user.label;
+  if (!label) redirect("/login");
 
   return (
     <div className="p-8 max-w-4xl">

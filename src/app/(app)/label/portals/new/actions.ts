@@ -1,12 +1,12 @@
 "use server";
 
-import { supabaseServer } from "@/lib/supabase-server";
+import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 export async function createPortalAction(formData: FormData) {
-  const { data: { user } } = await supabaseServer.auth.getUser();
-  if (!user) redirect("/login");
+  const user = await getCurrentUser();
+  if (!user || user.role !== "LABEL") redirect("/login");
 
   const label = await db.label.findUnique({ where: { userId: user.id } });
   if (!label) redirect("/login");

@@ -54,7 +54,6 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       tracks={tracks}
       portals={portals}
       labelId={label.id}
-      labelUserId={user.id}
       activePortalId={searchParams.portal}
       activeStatus={searchParams.status}
       activeSearch={searchParams.search}

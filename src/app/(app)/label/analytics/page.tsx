@@ -1,37 +1,34 @@
-import { db } from '@/lib/db'
+import { getCurrentUser } from "@/lib/auth-context";
+import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic'
 
 export default async function LabelAnalytics() {
-  const user = await db.user.findFirst({
-    where: { role: 'LABEL' },
-    include: { label: true }
-  })
+  const user = await getCurrentUser();
+  if (!user || user.role !== "LABEL") redirect("/login");
 
-  if (!user?.label) return <div>Label profile not found</div>
+  const label = await db.label.findUnique({ where: { userId: user.id } });
+  if (!label) redirect("/login");
 
-  // Get submission stats by month
   const submissions = await db.submission.findMany({
-    where: { portal: { labelId: user.label.id } },
+    where: { portal: { labelId: label.id } },
     select: { createdAt: true, status: true }
   })
 
-  // Group by month
   const monthlyStats = submissions.reduce((acc, sub) => {
     const month = new Date(sub.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' })
     acc[month] = (acc[month] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  // Status breakdown
   const statusCounts = submissions.reduce((acc, sub) => {
     acc[sub.status] = (acc[sub.status] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  // Top genres
   const tracks = await db.track.findMany({
-    where: { submission: { portal: { labelId: user.label.id } } },
+    where: { submission: { portal: { labelId: label.id } } },
     select: { genres: true }
   })
   const genreCounts = tracks.flatMap(t => t.genres).reduce((acc, genre) => {

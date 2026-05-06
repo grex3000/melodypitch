@@ -71,10 +71,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Prisma user record
+    // Create Prisma user record and role-specific profile
     try {
       console.log(`[REGISTER] Creating Prisma user: ${data.user.id}`);
-      await db.user.create({
+      const dbUser = await db.user.create({
         data: {
           supabaseUserId: data.user.id,
           email,
@@ -82,6 +82,12 @@ export async function POST(request: NextRequest) {
           role: role as Role,
         },
       });
+
+      if (role === 'LABEL') {
+        await db.label.create({ data: { userId: dbUser.id, name } });
+      } else if (role === 'SONGWRITER') {
+        await db.songwriter.create({ data: { userId: dbUser.id } });
+      }
     } catch (dbErr) {
       console.error(`[REGISTER] DB error:`, dbErr);
     }

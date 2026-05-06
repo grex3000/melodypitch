@@ -13,7 +13,6 @@ interface LibraryShellProps {
   tracks: LibraryTrack[];
   portals: PortalSummary[];
   labelId: string;
-  labelUserId: string;
   activePortalId?: string;
   activeStatus?: string;
   activeSearch?: string;
@@ -25,7 +24,6 @@ interface LibraryShellProps {
 export default function LibraryShell({
   tracks,
   portals,
-  labelUserId,
   activePortalId,
   activeStatus,
   activeSearch,
@@ -105,7 +103,6 @@ export default function LibraryShell({
       {/* Right — detail panel */}
       <DetailPanel
         track={selectedTrack}
-        labelUserId={labelUserId}
         onClose={() => setSelectedTrackId(null)}
       />
 

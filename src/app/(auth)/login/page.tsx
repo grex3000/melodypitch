@@ -151,6 +151,21 @@ export default function LoginPage({
                 }
               }
 
+              // Ensure role-specific profile exists (covers users registered before this was added)
+              if (user.role === 'LABEL') {
+                const label = await db.label.findUnique({ where: { userId: user.id } });
+                if (!label) {
+                  await db.label.create({ data: { userId: user.id, name: user.name } });
+                  console.log('[LOGIN] Created missing Label profile for:', user.email);
+                }
+              } else if (user.role === 'SONGWRITER') {
+                const songwriter = await db.songwriter.findUnique({ where: { userId: user.id } });
+                if (!songwriter) {
+                  await db.songwriter.create({ data: { userId: user.id } });
+                  console.log('[LOGIN] Created missing Songwriter profile for:', user.email);
+                }
+              }
+
               const dashboardMap: Record<string, string> = {
                 LABEL: '/label/dashboard',
                 SONGWRITER: '/songwriter/dashboard',

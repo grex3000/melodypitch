@@ -7,33 +7,39 @@ export async function GET(
   { params }: { params: { submissionId: string } }
 ) {
   try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { submissionId } = params;
 
-    // Verify submission exists
     const submission = await db.submission.findUnique({
       where: { id: submissionId },
+      include: {
+        songwriter: true,
+        portal: { include: { label: true } },
+      },
     });
 
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
+    const canRead =
+      (currentUser.role === 'LABEL' && submission.portal?.label?.userId === currentUser.id) ||
+      (currentUser.role === 'SONGWRITER' && submission.songwriter?.userId === currentUser.id);
+
+    if (!canRead) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const comments = await db.comment.findMany({
-      where: {
-        submissionId,
-      },
+      where: { submissionId },
       include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        author: { select: { id: true, name: true, email: true } },
       },
-      orderBy: {
-        createdAt: 'asc',
-      },
+      orderBy: { createdAt: 'asc' },
     });
 
     return NextResponse.json({
@@ -56,11 +62,27 @@ export async function POST(
 ) {
   try {
     const { submissionId } = params;
-    
-    // Get current user
+
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (currentUser.role !== 'LABEL') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const submission = await db.submission.findUnique({
+      where: { id: submissionId },
+      include: { portal: { include: { label: true } } },
+    });
+
+    if (!submission) {
+      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+    }
+
+    if (submission.portal?.label?.userId !== currentUser.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -70,16 +92,6 @@ export async function POST(
       return NextResponse.json({ error: 'Comment body is required' }, { status: 400 });
     }
 
-    // Verify submission exists
-    const submission = await db.submission.findUnique({
-      where: { id: submissionId },
-    });
-
-    if (!submission) {
-      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
-    }
-
-    // Create comment
     const comment = await db.comment.create({
       data: {
         submissionId,
@@ -87,13 +99,7 @@ export async function POST(
         body: commentBody.trim(),
       },
       include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        author: { select: { id: true, name: true, email: true } },
       },
     });
 
