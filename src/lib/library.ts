@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
+import { notifySongwriterOfStatusChange } from "@/lib/notifications";
 import type {
   Track,
   Submission,
@@ -128,11 +129,20 @@ export async function updateSubmissionStatus(
   status: SubmissionStatus
 ): Promise<void> {
   const { label } = await requireLabelUser();
+
+  const before = await db.submission.findFirst({
+    where: { id: submissionId, portal: { labelId: label.id } },
+    select: { status: true },
+  });
+  if (!before) throw new Error("Forbidden");
+
   const result = await db.submission.updateMany({
     where: { id: submissionId, portal: { labelId: label.id } },
     data: { status },
   });
   if (result.count === 0) throw new Error("Forbidden");
+
+  notifySongwriterOfStatusChange(submissionId, before.status, status).catch(() => {});
 }
 
 export async function setTrackRating(
