@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
+import { notifyArtistOfPitchPackage, notifyLabelOfArtistVerdict } from "@/lib/notifications";
 import type {
   PitchPackage,
   PitchItem,
@@ -143,6 +144,8 @@ export async function createPitchPackage(
     data: { status: "PITCHED" },
   });
 
+  notifyArtistOfPitchPackage(pkg.id).catch(() => {});
+
   return { id: pkg.id };
 }
 
@@ -169,6 +172,8 @@ export async function setItemVerdict(
     where: { id: itemId },
     data: { verdict },
   });
+
+  notifyLabelOfArtistVerdict(itemId).catch(() => {});
 }
 
 export async function setItemRating(

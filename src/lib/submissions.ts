@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { notifyLabelOfNewSubmission } from "@/lib/notifications";
 
 interface TrackInput {
   title: string;
@@ -54,6 +55,9 @@ export async function createSubmission(
       },
     },
   });
+
+  // Fire-and-forget — don't block the submission response on email delivery
+  notifyLabelOfNewSubmission(submission.id).catch(() => {});
 
   return { submissionId: submission.id };
 }
