@@ -79,11 +79,24 @@ export async function POST(request: NextRequest) {
         const role = metaRole && validRoles.includes(metaRole)
           ? (metaRole as 'LABEL' | 'SONGWRITER' | 'ARTIST')
           : 'SONGWRITER';
-        await db.user.create({
+        const dbUser = await db.user.create({
           data: { supabaseUserId: userId, email, name: userName, role },
         });
+        if (role === 'LABEL') {
+          await db.label.create({ data: { userId: dbUser.id, name: userName } });
+        } else if (role === 'SONGWRITER') {
+          await db.songwriter.create({ data: { userId: dbUser.id } });
+        }
         console.log('[STORE SESSION] Created new user:', email, 'role:', role);
       } else {
+        // Ensure role-specific profile exists for existing users
+        if (existingUser.role === 'LABEL') {
+          const label = await db.label.findUnique({ where: { userId: existingUser.id } });
+          if (!label) await db.label.create({ data: { userId: existingUser.id, name: existingUser.name } });
+        } else if (existingUser.role === 'SONGWRITER') {
+          const songwriter = await db.songwriter.findUnique({ where: { userId: existingUser.id } });
+          if (!songwriter) await db.songwriter.create({ data: { userId: existingUser.id } });
+        }
         console.log('[STORE SESSION] User already exists:', email);
       }
     } catch (dbErr) {
