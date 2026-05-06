@@ -40,6 +40,7 @@ export interface LibraryFilters {
   sort?: "newest" | "oldest" | "rating";
   minRating?: number;
   songwriterId?: string;
+  dateRange?: "7d" | "30d" | "90d";
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -48,12 +49,19 @@ export async function getLibraryTracks(
   labelId: string,
   filters: LibraryFilters
 ): Promise<LibraryTrack[]> {
+  const dateRangeStart = filters.dateRange
+    ? new Date(Date.now() - { "7d": 7, "30d": 30, "90d": 90 }[filters.dateRange] * 86_400_000)
+    : undefined;
+
   return db.track.findMany({
     where: {
+      // All submission-level conditions in one object — never split across spreads
       submission: {
         portal: { labelId },
         ...(filters.status ? { status: filters.status } : {}),
         ...(filters.portalId ? { portalId: filters.portalId } : {}),
+        ...(filters.songwriterId ? { songwriterId: filters.songwriterId } : {}),
+        ...(dateRangeStart ? { createdAt: { gte: dateRangeStart } } : {}),
       },
       ...(filters.search
         ? {
@@ -72,9 +80,6 @@ export async function getLibraryTracks(
       ...(filters.genre ? { genres: { has: filters.genre } } : {}),
       ...(filters.mood ? { moods: { has: filters.mood } } : {}),
       ...(filters.minRating != null ? { rating: { gte: filters.minRating } } : {}),
-      ...(filters.songwriterId
-        ? { submission: { songwriterId: filters.songwriterId } }
-        : {}),
     },
     include: {
       submission: {

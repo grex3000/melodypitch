@@ -11,6 +11,7 @@ interface FilterBarProps {
   activeSort?: string;
   activeMinRating?: string;
   activeSongwriterId?: string;
+  activeDateRange?: string;
   songwriters: { id: string; name: string }[];
   totalCount: number;
 }
@@ -22,6 +23,7 @@ export default function FilterBar({
   activeSort,
   activeMinRating,
   activeSongwriterId,
+  activeDateRange,
   songwriters,
   totalCount,
 }: FilterBarProps) {
@@ -118,6 +120,18 @@ export default function FilterBar({
           ))}
         </select>
       )}
+
+      {/* Date range */}
+      <select
+        value={activeDateRange ?? ""}
+        onChange={(e) => setParam("dateRange", e.target.value || undefined)}
+        className="input text-sm py-1.5 text-fg-2"
+      >
+        <option value="">All time</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+      </select>
 
       {/* Sort */}
       <select
