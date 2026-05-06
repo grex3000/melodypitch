@@ -70,14 +70,22 @@ export default async function LabelPortalsPage() {
                   /p/{portal.slug} · {portal._count.submissions} submission{portal._count.submissions !== 1 ? "s" : ""}
                 </p>
               </div>
-              <a
-                href={`/p/${portal.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="type-label accent-gold hover:underline shrink-0"
-              >
-                Open portal ↗
-              </a>
+              <div className="flex items-center gap-4 shrink-0">
+                <Link
+                  href={`/label/portals/${portal.id}`}
+                  className="type-label text-fg-2 hover:text-fg-1 transition-colors"
+                >
+                  Manage
+                </Link>
+                <a
+                  href={`/p/${portal.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="type-label accent-gold hover:underline"
+                >
+                  Open ↗
+                </a>
+              </div>
             </div>
           ))}
         </div>
