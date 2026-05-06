@@ -13,23 +13,29 @@ interface LibraryShellProps {
   tracks: LibraryTrack[];
   portals: PortalSummary[];
   labelId: string;
+  songwriters: { id: string; name: string }[];
   activePortalId?: string;
   activeStatus?: string;
   activeSearch?: string;
   activeGenre?: string;
   activeMood?: string;
   activeSort?: string;
+  activeMinRating?: string;
+  activeSongwriterId?: string;
 }
 
 export default function LibraryShell({
   tracks,
   portals,
+  songwriters,
   activePortalId,
   activeStatus,
   activeSearch,
   activeGenre,
   activeMood,
   activeSort,
+  activeMinRating,
+  activeSongwriterId,
 }: LibraryShellProps) {
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -87,6 +93,9 @@ export default function LibraryShell({
           activeGenre={activeGenre}
           activeMood={activeMood}
           activeSort={activeSort}
+          activeMinRating={activeMinRating}
+          activeSongwriterId={activeSongwriterId}
+          songwriters={songwriters}
           totalCount={tracks.length}
         />
         <TrackList

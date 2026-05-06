@@ -9,6 +9,9 @@ interface FilterBarProps {
   activeGenre?: string;
   activeMood?: string;
   activeSort?: string;
+  activeMinRating?: string;
+  activeSongwriterId?: string;
+  songwriters: { id: string; name: string }[];
   totalCount: number;
 }
 
@@ -17,6 +20,9 @@ export default function FilterBar({
   activeGenre,
   activeMood,
   activeSort,
+  activeMinRating,
+  activeSongwriterId,
+  songwriters,
   totalCount,
 }: FilterBarProps) {
   const router = useRouter();
@@ -39,22 +45,16 @@ export default function FilterBar({
 
   return (
     <div
-      className={`flex items-center gap-3 py-3 border-b border-border-default transition-opacity ${
+      className={`flex flex-wrap items-center gap-2 py-3 border-b border-border-default transition-opacity ${
         isPending ? "opacity-60" : ""
       }`}
     >
       {/* Search */}
-      <div className="relative flex-1 max-w-xs">
+      <div className="relative flex-1 min-w-[160px] max-w-xs">
         <svg
           className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-3"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -64,7 +64,7 @@ export default function FilterBar({
           defaultValue={activeSearch}
           placeholder="Search tracks or writers…"
           onChange={(e) => setParam("search", e.target.value || undefined)}
-          className="input pl-8 py-1.5 text-sm"
+          className="input pl-8 py-1.5 text-sm w-full"
         />
       </div>
 
@@ -76,9 +76,7 @@ export default function FilterBar({
       >
         <option value="">All genres</option>
         {GENRES.map((g) => (
-          <option key={g} value={g}>
-            {g}
-          </option>
+          <option key={g} value={g}>{g}</option>
         ))}
       </select>
 
@@ -90,11 +88,36 @@ export default function FilterBar({
       >
         <option value="">All moods</option>
         {MOODS.map((m) => (
-          <option key={m} value={m}>
-            {m}
-          </option>
+          <option key={m} value={m}>{m}</option>
         ))}
       </select>
+
+      {/* Min rating */}
+      <select
+        value={activeMinRating ?? ""}
+        onChange={(e) => setParam("minRating", e.target.value || undefined)}
+        className="input text-sm py-1.5 text-fg-2"
+      >
+        <option value="">Any rating</option>
+        <option value="5">★★★★★ only</option>
+        <option value="4">★★★★ & up</option>
+        <option value="3">★★★ & up</option>
+        <option value="2">★★ & up</option>
+      </select>
+
+      {/* Songwriter */}
+      {songwriters.length > 0 && (
+        <select
+          value={activeSongwriterId ?? ""}
+          onChange={(e) => setParam("songwriter", e.target.value || undefined)}
+          className="input text-sm py-1.5 text-fg-2"
+        >
+          <option value="">All songwriters</option>
+          {songwriters.map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+      )}
 
       {/* Sort */}
       <select
