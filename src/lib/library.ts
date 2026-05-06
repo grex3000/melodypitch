@@ -38,6 +38,8 @@ export interface LibraryFilters {
   genre?: string;
   mood?: string;
   sort?: "newest" | "oldest" | "rating";
+  minRating?: number;
+  songwriterId?: string;
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -69,6 +71,10 @@ export async function getLibraryTracks(
         : {}),
       ...(filters.genre ? { genres: { has: filters.genre } } : {}),
       ...(filters.mood ? { moods: { has: filters.mood } } : {}),
+      ...(filters.minRating != null ? { rating: { gte: filters.minRating } } : {}),
+      ...(filters.songwriterId
+        ? { submission: { songwriterId: filters.songwriterId } }
+        : {}),
     },
     include: {
       submission: {

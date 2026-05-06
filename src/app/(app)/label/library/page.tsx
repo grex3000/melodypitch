@@ -23,6 +23,8 @@ interface PageProps {
     genre?: string;
     mood?: string;
     sort?: string;
+    minRating?: string;
+    songwriter?: string;
   };
 }
 
@@ -37,7 +39,10 @@ export default async function LibraryPage({ searchParams }: PageProps) {
     ? (searchParams.status as SubmissionStatus)
     : undefined;
 
-  const [tracks, portals] = await Promise.all([
+  const minRating = searchParams.minRating ? parseInt(searchParams.minRating) : undefined;
+  const validMinRating = minRating && minRating >= 1 && minRating <= 5 ? minRating : undefined;
+
+  const [tracks, portals, songwriters] = await Promise.all([
     getLibraryTracks(label.id, {
       portalId: searchParams.portal,
       status,
@@ -45,8 +50,15 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       genre: searchParams.genre,
       mood: searchParams.mood,
       sort: (searchParams.sort as "newest" | "oldest" | "rating") || "newest",
+      minRating: validMinRating,
+      songwriterId: searchParams.songwriter,
     }),
     getPortalsForLabel(label.id),
+    db.songwriter.findMany({
+      where: { submissions: { some: { portal: { labelId: label.id } } } },
+      include: { user: { select: { name: true } } },
+      orderBy: { user: { name: "asc" } },
+    }),
   ]);
 
   return (
@@ -54,12 +66,15 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       tracks={tracks}
       portals={portals}
       labelId={label.id}
+      songwriters={songwriters.map(s => ({ id: s.id, name: s.user.name }))}
       activePortalId={searchParams.portal}
       activeStatus={searchParams.status}
       activeSearch={searchParams.search}
       activeGenre={searchParams.genre}
       activeMood={searchParams.mood}
       activeSort={searchParams.sort}
+      activeMinRating={searchParams.minRating}
+      activeSongwriterId={searchParams.songwriter}
     />
   );
 }
