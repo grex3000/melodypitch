@@ -164,6 +164,13 @@ export default function LoginPage({
                   await db.songwriter.create({ data: { userId: user.id } });
                   console.log('[LOGIN] Created missing Songwriter profile for:', user.email);
                 }
+              } else if (user.role === 'ARTIST') {
+                const member = await db.artistMember.findUnique({ where: { userId: user.id } });
+                if (!member) {
+                  const artist = await db.artist.create({ data: { name: user.name } });
+                  await db.artistMember.create({ data: { userId: user.id, artistId: artist.id, role: 'member' } });
+                  console.log('[LOGIN] Created missing Artist profile for:', user.email);
+                }
               }
 
               const dashboardMap: Record<string, string> = {
