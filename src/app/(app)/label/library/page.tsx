@@ -25,6 +25,7 @@ interface PageProps {
     sort?: string;
     minRating?: string;
     songwriter?: string;
+    dateRange?: string;
   };
 }
 
@@ -52,6 +53,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       sort: (searchParams.sort as "newest" | "oldest" | "rating") || "newest",
       minRating: validMinRating,
       songwriterId: searchParams.songwriter,
+      dateRange: (searchParams.dateRange as "7d" | "30d" | "90d") || undefined,
     }),
     getPortalsForLabel(label.id),
     db.songwriter.findMany({
@@ -75,6 +77,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       activeSort={searchParams.sort}
       activeMinRating={searchParams.minRating}
       activeSongwriterId={searchParams.songwriter}
+      activeDateRange={searchParams.dateRange}
     />
   );
 }

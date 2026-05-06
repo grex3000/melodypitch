@@ -22,6 +22,7 @@ interface LibraryShellProps {
   activeSort?: string;
   activeMinRating?: string;
   activeSongwriterId?: string;
+  activeDateRange?: string;
 }
 
 export default function LibraryShell({
@@ -36,6 +37,7 @@ export default function LibraryShell({
   activeSort,
   activeMinRating,
   activeSongwriterId,
+  activeDateRange,
 }: LibraryShellProps) {
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -95,6 +97,7 @@ export default function LibraryShell({
           activeSort={activeSort}
           activeMinRating={activeMinRating}
           activeSongwriterId={activeSongwriterId}
+          activeDateRange={activeDateRange}
           songwriters={songwriters}
           totalCount={tracks.length}
         />
