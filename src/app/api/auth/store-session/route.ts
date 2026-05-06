@@ -86,6 +86,9 @@ export async function POST(request: NextRequest) {
           await db.label.create({ data: { userId: dbUser.id, name: userName } });
         } else if (role === 'SONGWRITER') {
           await db.songwriter.create({ data: { userId: dbUser.id } });
+        } else if (role === 'ARTIST') {
+          const artist = await db.artist.create({ data: { name: userName } });
+          await db.artistMember.create({ data: { userId: dbUser.id, artistId: artist.id, role: 'member' } });
         }
         console.log('[STORE SESSION] Created new user:', email, 'role:', role);
       } else {
@@ -96,6 +99,12 @@ export async function POST(request: NextRequest) {
         } else if (existingUser.role === 'SONGWRITER') {
           const songwriter = await db.songwriter.findUnique({ where: { userId: existingUser.id } });
           if (!songwriter) await db.songwriter.create({ data: { userId: existingUser.id } });
+        } else if (existingUser.role === 'ARTIST') {
+          const member = await db.artistMember.findUnique({ where: { userId: existingUser.id } });
+          if (!member) {
+            const artist = await db.artist.create({ data: { name: existingUser.name } });
+            await db.artistMember.create({ data: { userId: existingUser.id, artistId: artist.id, role: 'member' } });
+          }
         }
         console.log('[STORE SESSION] User already exists:', email);
       }

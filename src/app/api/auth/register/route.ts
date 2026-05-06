@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
         await db.label.create({ data: { userId: dbUser.id, name } });
       } else if (role === 'SONGWRITER') {
         await db.songwriter.create({ data: { userId: dbUser.id } });
+      } else if (role === 'ARTIST') {
+        const artist = await db.artist.create({ data: { name } });
+        await db.artistMember.create({ data: { userId: dbUser.id, artistId: artist.id, role: 'member' } });
       }
     } catch (dbErr) {
       console.error(`[REGISTER] DB error:`, dbErr);
