@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'MelodyPitch <noreply@melodypitch.com>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://melodypitch.com';
 
@@ -13,7 +13,7 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping send');
     return null;
   }
