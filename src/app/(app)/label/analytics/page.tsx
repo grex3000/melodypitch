@@ -59,24 +59,31 @@ export default async function LabelAnalytics() {
     shortlistRate: number;
   };
 
-  const songwriterMap = new Map<string, SongwriterRow>();
+  type SongwriterAcc = SongwriterRow & {
+    _ratingSum: number;
+    _ratingCount: number;
+    _pitched: number;
+    _shortlisted: number;
+  };
+
+  const songwriterMap = new Map<string, SongwriterAcc>();
   for (const sub of songwriterSubmissions) {
     if (!sub.songwriter) continue;
     const name = sub.songwriter.user.name;
-    const existing = songwriterMap.get(name) ?? { name, total: 0, avgRating: null, pitchRate: 0, shortlistRate: 0, _ratingSum: 0, _ratingCount: 0, _pitched: 0, _shortlisted: 0 } as SongwriterRow & { _ratingSum: number; _ratingCount: number; _pitched: number; _shortlisted: number };
+    const existing = songwriterMap.get(name) ?? { name, total: 0, avgRating: null, pitchRate: 0, shortlistRate: 0, _ratingSum: 0, _ratingCount: 0, _pitched: 0, _shortlisted: 0 };
     existing.total++;
-    if (sub.status === 'PITCHED') (existing as any)._pitched++;
-    if (sub.status === 'SHORTLISTED' || sub.status === 'PITCHED') (existing as any)._shortlisted++;
+    if (sub.status === 'PITCHED') existing._pitched++;
+    if (sub.status === 'SHORTLISTED' || sub.status === 'PITCHED') existing._shortlisted++;
     for (const t of sub.tracks) {
       if (t.rating != null) {
-        (existing as any)._ratingSum += t.rating;
-        (existing as any)._ratingCount++;
+        existing._ratingSum += t.rating;
+        existing._ratingCount++;
       }
     }
     songwriterMap.set(name, existing);
   }
 
-  const songwriterRows: SongwriterRow[] = Array.from(songwriterMap.values()).map((r: any) => ({
+  const songwriterRows: SongwriterRow[] = Array.from(songwriterMap.values()).map((r) => ({
     name: r.name,
     total: r.total,
     avgRating: r._ratingCount > 0 ? Math.round((r._ratingSum / r._ratingCount) * 10) / 10 : null,
