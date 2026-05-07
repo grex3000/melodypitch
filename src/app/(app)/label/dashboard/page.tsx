@@ -1,36 +1,31 @@
+import { getCurrentUser } from '@/lib/auth-context';
 import { db } from '@/lib/db';
+import { redirect } from 'next/navigation';
 
-async function getLabelReceivedSubmissions() {
-  try {
-    // Get all submissions (in production, filter by label's portals)
-    const submissions = await db.submission.findMany({
-      include: {
-        tracks: true,
-        portal: true,
-        songwriter: {
-          include: {
-            user: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 50,
-    });
-
-    return submissions.map((sub) => ({
-      ...sub,
-      createdAt: sub.createdAt.toISOString(),
-    }));
-  } catch (error) {
-    console.error('Error fetching submissions:', error);
-    return [];
-  }
-}
+export const dynamic = 'force-dynamic';
 
 export default async function LabelDashboard() {
-  const submissions = await getLabelReceivedSubmissions();
+  const user = await getCurrentUser();
+  if (!user || user.role !== 'LABEL') redirect('/login');
+
+  const label = await db.label.findUnique({ where: { userId: user.id } });
+  if (!label) redirect('/login');
+
+  const rawSubmissions = await db.submission.findMany({
+    where: { portal: { labelId: label.id } },
+    include: {
+      tracks: true,
+      portal: true,
+      songwriter: { include: { user: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
+
+  const submissions = rawSubmissions.map((sub) => ({
+    ...sub,
+    createdAt: sub.createdAt.toISOString(),
+  }));
 
   const stats = {
     total: submissions.length,
