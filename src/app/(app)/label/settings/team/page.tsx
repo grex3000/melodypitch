@@ -9,7 +9,11 @@ import { buildTeamInviteUrl } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TeamSettingsPage() {
+export default async function TeamSettingsPage({
+  searchParams,
+}: {
+  searchParams: { error?: string };
+}) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'LABEL') redirect('/login');
 
@@ -34,6 +38,8 @@ export default async function TeamSettingsPage() {
   });
 
   if (!fullLabel) redirect('/login');
+
+  const formError = searchParams.error ?? null;
 
   return (
     <div className="p-8 max-w-2xl">
@@ -115,11 +121,21 @@ export default async function TeamSettingsPage() {
       {isOwner && (
         <section>
           <h2 className="type-label text-fg-2 mb-3">Invite a team member</h2>
+          {formError && (
+            <p className="type-body-sm text-error bg-error-muted px-3 py-2 rounded-md mb-4">
+              {formError}
+            </p>
+          )}
           <form
             action={async (formData: FormData) => {
               'use server';
               const email = (formData.get('email') as string)?.trim().toLowerCase();
-              if (email) await sendTeamInvite(label.id, email);
+              if (email) {
+                const result = await sendTeamInvite(label.id, email);
+                if (result?.error) {
+                  redirect(`/label/settings/team?error=${encodeURIComponent(result.error)}`);
+                }
+              }
             }}
             className="flex gap-2"
           >

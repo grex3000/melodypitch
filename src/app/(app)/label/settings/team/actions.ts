@@ -18,6 +18,8 @@ export async function sendTeamInvite(labelId: string, email: string) {
   const { user, label } = await requireOwner();
   if (label.id !== labelId) return { error: 'Forbidden' };
 
+  if (email === user.email) return { error: 'You are already the owner of this workspace' };
+
   const alreadyMember = await db.labelMember.findFirst({
     where: { labelId, user: { email } },
   });
@@ -28,13 +30,16 @@ export async function sendTeamInvite(labelId: string, email: string) {
   });
   if (existingInvite) return { error: 'An invite has already been sent to this address' };
 
-  const invite = await db.labelTeamInvite.create({
-    data: { labelId, email },
-  });
+  const invite = await db.labelTeamInvite.create({ data: { labelId, email } });
 
-  const acceptUrl = buildTeamInviteUrl(invite.token);
-  const template = emailTemplates.teamInvite(label.name, user.name, acceptUrl);
-  await sendEmail({ to: email, ...template });
+  try {
+    const acceptUrl = buildTeamInviteUrl(invite.token);
+    const template = emailTemplates.teamInvite(label.name, user.name, acceptUrl);
+    await sendEmail({ to: email, ...template });
+  } catch {
+    await db.labelTeamInvite.delete({ where: { id: invite.id } });
+    return { error: 'Failed to send invite email. Please try again.' };
+  }
 
   revalidatePath('/label/settings/team');
   return { success: true };
