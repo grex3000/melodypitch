@@ -6,7 +6,7 @@ import type { Role } from '@prisma/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, name, role } = body;
+    const { email, password, name, role, teamInviteToken } = body;
 
     // Validation
     if (!email || !password || !name || !role) {
@@ -84,7 +84,22 @@ export async function POST(request: NextRequest) {
       });
 
       if (role === 'LABEL') {
-        await db.label.create({ data: { userId: dbUser.id, name } });
+        if (teamInviteToken) {
+          const invite = await db.labelTeamInvite.findUnique({
+            where: { token: teamInviteToken },
+          });
+          if (invite && !invite.acceptedAt) {
+            await db.labelMember.create({
+              data: { userId: dbUser.id, labelId: invite.labelId },
+            });
+            await db.labelTeamInvite.update({
+              where: { id: invite.id },
+              data: { acceptedAt: new Date() },
+            });
+          }
+        } else {
+          await db.label.create({ data: { userId: dbUser.id, name } });
+        }
       } else if (role === 'SONGWRITER') {
         await db.songwriter.create({ data: { userId: dbUser.id } });
       } else if (role === 'ARTIST') {
