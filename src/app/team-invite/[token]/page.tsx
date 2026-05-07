@@ -9,7 +9,6 @@ export default async function TeamInviteAcceptPage({
 }) {
   const invite = await db.labelTeamInvite.findUnique({
     where: { token: params.token },
-    include: { label: true },
   });
 
   if (!invite || invite.acceptedAt) {

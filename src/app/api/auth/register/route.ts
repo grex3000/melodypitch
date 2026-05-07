@@ -23,6 +23,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Pre-validate team invite before creating any accounts
+    if (teamInviteToken) {
+      const invite = await db.labelTeamInvite.findUnique({
+        where: { token: teamInviteToken },
+        select: { email: true, acceptedAt: true },
+      });
+      if (!invite || invite.acceptedAt || invite.email.toLowerCase() !== email.toLowerCase()) {
+        return NextResponse.json(
+          { error: 'This invite link is invalid, has already been used, or does not match the email address.' },
+          { status: 400 }
+        );
+      }
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -87,14 +101,16 @@ export async function POST(request: NextRequest) {
         const invite = await db.labelTeamInvite.findUnique({
           where: { token: teamInviteToken },
         });
-        if (invite && !invite.acceptedAt) {
-          await db.labelMember.create({
-            data: { userId: dbUser.id, labelId: invite.labelId },
-          });
-          await db.labelTeamInvite.update({
-            where: { id: invite.id },
-            data: { acceptedAt: new Date() },
-          });
+        if (invite && !invite.acceptedAt && invite.email.toLowerCase() === email.toLowerCase()) {
+          await db.$transaction([
+            db.labelMember.create({
+              data: { userId: dbUser.id, labelId: invite.labelId },
+            }),
+            db.labelTeamInvite.update({
+              where: { id: invite.id },
+              data: { acceptedAt: new Date() },
+            }),
+          ]);
         }
       } else if (role === 'LABEL') {
         await db.label.create({ data: { userId: dbUser.id, name } });
