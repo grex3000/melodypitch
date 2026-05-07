@@ -10,6 +10,7 @@ const NAV_ITEMS: Record<string, Array<{ href: string; label: string }>> = {
     { href: "/label/library", label: "Demo Library" },
     { href: "/label/pitches", label: "Pitch CRM" },
     { href: "/label/analytics", label: "Analytics" },
+    { href: "/label/settings/team", label: "Team" },
   ],
   SONGWRITER: [
     { href: "/songwriter/dashboard", label: "My Submissions" },
