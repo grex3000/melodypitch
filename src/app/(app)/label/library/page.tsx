@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { getLabelForUser } from "@/lib/label-context";
 import { getLibraryTracks, getPortalsForLabel } from "@/lib/library";
 import LibraryShell from "@/components/library/LibraryShell";
 import type { SubmissionStatus } from "@prisma/client";
@@ -33,7 +34,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (!user || user.role !== "LABEL") redirect("/login");
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect("/login");
 
   const status = VALID_STATUSES.includes(searchParams.status as SubmissionStatus)

@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { getLabelForUser } from "@/lib/label-context";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +10,11 @@ export default async function LabelPortalsPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "LABEL") redirect("/login");
 
-  const label = await db.label.findUnique({
-    where: { userId: user.id },
+  const label = await getLabelForUser(user.id);
+  if (!label) redirect("/login");
+
+  const fullLabel = await db.label.findUnique({
+    where: { id: label.id },
     include: {
       portals: {
         orderBy: { createdAt: "desc" },
@@ -21,7 +25,7 @@ export default async function LabelPortalsPage() {
     },
   });
 
-  if (!label) redirect("/login");
+  if (!fullLabel) redirect("/login");
 
   return (
     <div className="p-8 max-w-4xl">
@@ -38,7 +42,7 @@ export default async function LabelPortalsPage() {
         </Link>
       </div>
 
-      {label.portals.length === 0 ? (
+      {fullLabel.portals.length === 0 ? (
         <div className="border border-dashed border-border-subtle rounded-lg py-16 text-center">
           <p className="fg-3 type-body-sm">No portals yet.</p>
           <Link href="/label/portals/new" className="accent-gold type-body-sm hover:underline mt-1 inline-block">
@@ -47,7 +51,7 @@ export default async function LabelPortalsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {label.portals.map((portal) => (
+          {fullLabel.portals.map((portal) => (
             <div
               key={portal.id}
               className="bg-bg-surface-1 rounded-lg px-5 py-4 flex items-center gap-4"

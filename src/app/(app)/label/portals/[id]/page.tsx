@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/auth-context';
 import { db } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import { getLabelForUser } from '@/lib/label-context';
 import { buildInviteUrl } from '@/lib/email';
 import { sendPortalInvite, revokePortalInvite } from './actions';
 import CopyButton from '@/components/portal/CopyButton';
@@ -13,7 +14,7 @@ export default async function PortalManagePage({ params }: { params: { id: strin
   const user = await getCurrentUser();
   if (!user || user.role !== 'LABEL') redirect('/login');
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect('/login');
 
   const portal = await db.portal.findUnique({

@@ -3,12 +3,13 @@
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { getLabelForUser } from "@/lib/label-context";
 
 export async function createPortalAction(formData: FormData) {
   const user = await getCurrentUser();
   if (!user || user.role !== "LABEL") redirect("/login");
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect("/login");
 
   const type = formData.get("type") as "GENERAL" | "PROJECT";

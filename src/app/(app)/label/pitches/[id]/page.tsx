@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth-context";
 import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
+import { getLabelForUser } from "@/lib/label-context";
 import { getPitchPackage } from "@/lib/pitches";
 import Link from "next/link";
 
@@ -27,7 +28,7 @@ export default async function LabelPitchDetailPage({
   const user = await getCurrentUser();
   if (!user || user.role !== "LABEL") redirect("/login");
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect("/login");
 
   const pkg = await getPitchPackage(params.id);

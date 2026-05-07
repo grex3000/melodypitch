@@ -5,12 +5,13 @@ import { getCurrentUser } from '@/lib/auth-context';
 import { sendEmail, emailTemplates, buildInviteUrl } from '@/lib/email';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { getLabelForUser } from '@/lib/label-context';
 
 export async function sendPortalInvite(portalId: string, email: string) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'LABEL') redirect('/login');
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect('/login');
 
   const portal = await db.portal.findUnique({ where: { id: portalId } });
@@ -41,7 +42,7 @@ export async function revokePortalInvite(inviteId: string) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'LABEL') redirect('/login');
 
-  const label = await db.label.findUnique({ where: { userId: user.id } });
+  const label = await getLabelForUser(user.id);
   if (!label) redirect('/login');
 
   const invite = await db.portalInvite.findUnique({
