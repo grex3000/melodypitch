@@ -26,6 +26,10 @@ export function buildInviteUrl(slug: string, token: string) {
   return `${APP_URL}/p/${slug}?token=${token}`;
 }
 
+export function buildTeamInviteUrl(token: string) {
+  return `${APP_URL}/team-invite/${token}`;
+}
+
 export const emailTemplates = {
   portalInvite: (labelName: string, portalName: string, inviteUrl: string) => ({
     subject: `${labelName} invited you to submit demos on MelodyPitch`,
@@ -83,6 +87,18 @@ export const emailTemplates = {
         <p>Hi ${artistName},</p>
         <p><strong>${labelName}</strong> sent you a pitch package: <strong>${packageName}</strong>.</p>
         <a href="${reviewUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600">Review Tracks</a>
+      </div>
+    `,
+  }),
+
+  teamInvite: (labelName: string, inviterName: string, acceptUrl: string) => ({
+    subject: `${labelName} invited you to join their MelodyPitch workspace`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+        <h2 style="margin:0 0 8px">You've been invited</h2>
+        <p style="color:#666;margin:0 0 24px">${inviterName} has invited you to join <strong>${labelName}</strong>'s workspace on MelodyPitch.</p>
+        <a href="${acceptUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600">Accept Invite</a>
+        <p style="color:#999;font-size:12px;margin-top:24px">This link is for you only — it will create a new account linked to ${labelName}.</p>
       </div>
     `,
   }),
