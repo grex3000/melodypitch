@@ -83,23 +83,21 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      if (role === 'LABEL') {
-        if (teamInviteToken) {
-          const invite = await db.labelTeamInvite.findUnique({
-            where: { token: teamInviteToken },
+      if (teamInviteToken) {
+        const invite = await db.labelTeamInvite.findUnique({
+          where: { token: teamInviteToken },
+        });
+        if (invite && !invite.acceptedAt) {
+          await db.labelMember.create({
+            data: { userId: dbUser.id, labelId: invite.labelId },
           });
-          if (invite && !invite.acceptedAt) {
-            await db.labelMember.create({
-              data: { userId: dbUser.id, labelId: invite.labelId },
-            });
-            await db.labelTeamInvite.update({
-              where: { id: invite.id },
-              data: { acceptedAt: new Date() },
-            });
-          }
-        } else {
-          await db.label.create({ data: { userId: dbUser.id, name } });
+          await db.labelTeamInvite.update({
+            where: { id: invite.id },
+            data: { acceptedAt: new Date() },
+          });
         }
+      } else if (role === 'LABEL') {
+        await db.label.create({ data: { userId: dbUser.id, name } });
       } else if (role === 'SONGWRITER') {
         await db.songwriter.create({ data: { userId: dbUser.id } });
       } else if (role === 'ARTIST') {
@@ -108,6 +106,12 @@ export async function POST(request: NextRequest) {
       }
     } catch (dbErr) {
       console.error(`[REGISTER] DB error:`, dbErr);
+      if (teamInviteToken) {
+        return NextResponse.json(
+          { error: 'Failed to complete invite acceptance. Please contact support.' },
+          { status: 500 }
+        );
+      }
     }
 
     const needsConfirmation = !data.user.email_confirmed_at;
