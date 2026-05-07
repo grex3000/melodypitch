@@ -45,6 +45,7 @@ model User {
   label         Label?
   songwriter    Songwriter?
   artistMember  ArtistMember?
+  labelMember   LabelMember?
   comments      Comment[] @relation("CommentAuthor")
   artistComments ArtistComment[] @relation("ArtistCommentAuthor")
 }
@@ -59,6 +60,8 @@ model Label {
 
   portals        Portal[]
   pitchPackages  PitchPackage[]
+  members        LabelMember[]
+  teamInvites    LabelTeamInvite[]
 }
 
 model Songwriter {
@@ -88,6 +91,25 @@ model ArtistMember {
   artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   role      String
   createdAt DateTime @default(now())
+}
+
+model LabelMember {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  labelId   String
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model LabelTeamInvite {
+  id         String    @id @default(cuid())
+  labelId    String
+  label      Label     @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  email      String
+  token      String    @unique @default(cuid())
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
 }
 
 model Portal {
